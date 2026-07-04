@@ -1,11 +1,11 @@
 :root {
-  --bg: #f4f3ee;
+  --bg: #f3f7fd;
   --card: #ffffff;
-  --ink: #2c2c2a;
-  --muted: #6b6a64;
-  --line: #e2e0d8;
-  --accent: #d6443b;
-  --accent-soft: #f6f5f0;
+  --ink: #16224e;
+  --muted: #5c6683;
+  --line: #e1e8f3;
+  --accent: #1e63c6;
+  --accent-soft: #eaf1fb;
 }
 
 * {
@@ -534,9 +534,18 @@ body {
   }
 }
 
-/* ── 인쇄 / PDF ───────────────────────────── */
+/* ── 인쇄(B-1 클린 레저) ───────────────────── */
+.print-only {
+  display: none;
+}
+
 @media print {
-  .no-print {
+  @page {
+    size: A4 landscape;
+    margin: 10mm;
+  }
+  .no-print,
+  .screen-only {
     display: none !important;
   }
   body {
@@ -546,27 +555,112 @@ body {
     max-width: none;
     padding: 0;
   }
-  .card {
-    border: none;
-    padding: 0;
-    margin: 0 0 12px;
+  .print-only {
+    display: block;
+  }
+  * {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .print-page {
+    break-after: page;
+    page-break-after: always;
+  }
+  .print-page:last-child {
+    break-after: auto;
+    page-break-after: auto;
+  }
+
+  /* 1페이지 — 로드맵 */
+  .print-roadmap-page {
+    text-align: center;
+  }
+  .print-title {
+    font-size: 26px;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    margin: 6px 0 4px;
+    color: #16224e;
+  }
+  .print-sub {
+    font-size: 12px;
+    color: #7a8398;
+    margin-bottom: 22px;
+  }
+  .print-roadmap-wrap {
+    display: flex;
+    justify-content: center;
+  }
+  .print-roadmap-wrap .roadmap-svg {
+    width: 100%;
+    height: auto;
+  }
+
+  /* 2페이지~ — 월 시간표 2개(좌·우) */
+  .print-tt-page {
+    display: flex;
+    gap: 28px;
+    align-items: flex-start;
+    justify-content: center;
+    padding-top: 8mm;
+  }
+  .print-tt {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     break-inside: avoid;
   }
-  .export-region {
-    border: none;
+  .print-tt-title {
+    font-weight: 750;
+    font-size: 15px;
+    letter-spacing: 0.03em;
+    margin-bottom: 12px;
+    text-align: center;
+    color: #16224e;
   }
-  .roadmap-scroll,
-  .tt-scroll {
-    overflow: visible;
-    border: none;
+  .print-tt-cal {
+    display: flex;
+    justify-content: center;
   }
-  /* 로드맵을 한 페이지 폭에 맞춰 축소 */
-  .roadmap-svg {
-    width: 100% !important;
-    height: auto !important;
+
+  .pt-day-head {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    font-weight: 700;
+    color: #16224e;
+    border-bottom: 1px solid #c7d2e6;
   }
-  @page {
-    size: A4 landscape;
-    margin: 10mm;
+  .pt-time {
+    font-size: 8px;
+    color: #8894ab;
+    text-align: right;
+  }
+  .pt-col {
+    border-left: 1px solid #edf1f7;
+  }
+  .pt-col:last-of-type {
+    border-right: 1px solid #edf1f7;
+  }
+  .pt-block {
+    border-radius: 4px;
+    padding: 2px 3px;
+    font-size: 8px;
+    line-height: 1.15;
+    overflow: hidden;
+    box-sizing: border-box;
+  }
+  .pt-block strong {
+    font-size: 8.5px;
+    font-weight: 700;
+    display: block;
+  }
+  .pt-time-range,
+  .pt-teacher {
+    font-size: 7px;
+    opacity: 0.9;
   }
 }

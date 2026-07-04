@@ -10,9 +10,9 @@ import {
   useSensors,
 } from '@dnd-kit/core';
 import {
-  COLORS,
+  COURSE_COLORS,
   Course,
-  Subject,
+  courseColor,
   TimeSlot,
   Track,
   Weekday,
@@ -58,7 +58,7 @@ function Block({ block, conflict }: { block: TimetableBlock; conflict: boolean }
   const top = HEAD_H + minToSlot(toMin(block.slot.start)) * SLOT_H;
   const height = ((toMin(block.slot.end) - toMin(block.slot.start)) / SLOT_MIN) * SLOT_H;
   const left = TIME_COL_W + dayIdx * DAY_W;
-  const c = COLORS[block.subject] ?? { fill: '#D3D1C7', text: '#2C2C2A' };
+  const c = courseColor(block.type);
   return (
     <div
       ref={setNodeRef}
@@ -73,7 +73,7 @@ function Block({ block, conflict }: { block: TimetableBlock; conflict: boolean }
         height: height - 2,
         background: c.fill,
         color: c.text,
-        border: conflict ? '2px solid #D6443B' : '1px solid rgba(0,0,0,0.15)',
+        border: conflict ? '2px solid #D6443B' : '1px solid rgba(255,255,255,0.35)',
         borderRadius: 5,
         boxSizing: 'border-box',
         padding: '2px 5px',
@@ -110,7 +110,7 @@ function Cell({ dayIdx, slot }: { dayIdx: number; slot: number }) {
         boxSizing: 'border-box',
         borderRight: '1px solid #ECEAE2',
         borderBottom: slot % 2 === 1 ? '1px solid #E2E0D8' : '1px dashed #EFEDE6',
-        background: isOver ? 'rgba(214,68,59,0.10)' : 'transparent',
+        background: isOver ? 'rgba(30,99,198,0.10)' : 'transparent',
       }}
     />
   );
@@ -184,7 +184,10 @@ export default function MonthlyTimetable({
 
       <div className="tt-toolbar no-print">
         <span>
-          <span className="swatch" style={{ background: COLORS.과학.fill }} /> 과학
+          <span className="swatch" style={{ background: COURSE_COLORS.중등교과.fill }} /> 중등 과학
+        </span>
+        <span>
+          <span className="swatch" style={{ background: COURSE_COLORS.고등교과.fill }} /> 고등 과학
         </span>
         <span className="hint">블록을 드래그해 요일·시간을 옮기세요 · 수업 추가는 [관리] 탭</span>
       </div>
@@ -245,7 +248,7 @@ export default function MonthlyTimetable({
           <ul>
             {lessons.map((b) => (
               <li key={b.key}>
-                <span className="dot" style={{ background: (COLORS[b.subject as Subject] ?? { fill: '#D3D1C7' }).fill }} />
+                <span className="dot" style={{ background: courseColor(b.type).fill }} />
                 {b.slot.day} {b.slot.start}~{b.slot.end} · {b.label}
                 {b.teacher ? ` · ${b.teacher} 쌤` : ''}
               </li>

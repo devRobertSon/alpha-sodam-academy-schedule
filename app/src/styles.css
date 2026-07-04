@@ -586,9 +586,8 @@ body {
 .print-tt-page {
   display: flex;
   gap: 48px;
-  align-items: flex-start;
+  align-items: center;
   justify-content: center;
-  padding-top: 20px;
 }
 .print-tt {
   flex: 1;
@@ -692,9 +691,10 @@ body {
   .print-sub {
     margin-bottom: 22px;
   }
+  /* 인쇄 페이지 높이를 채워 시간표를 상하 중앙에 배치 */
   .print-tt-page {
     gap: 28px;
-    padding-top: 8mm;
+    min-height: 186mm;
   }
   .print-tt-title {
     font-size: 15px;

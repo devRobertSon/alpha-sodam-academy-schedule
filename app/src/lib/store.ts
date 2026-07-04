@@ -6,7 +6,8 @@ export interface StoreData {
   includedIds: string[];
 }
 
-const KEY = 'asg.store.v3';
+const KEY = 'asg.store.v4';
+const OLD_KEYS = ['asg.store.v3', 'asg.store.v2', 'asg.store.v1'];
 
 export function defaultStore(): StoreData {
   return {
@@ -23,15 +24,23 @@ export function defaultStore(): StoreData {
 export function loadStore(): StoreData {
   try {
     const raw = localStorage.getItem(KEY);
-    if (!raw) return defaultStore();
+    if (!raw) {
+      OLD_KEYS.forEach((k) => localStorage.removeItem(k));
+      return defaultStore();
+    }
     const parsed = JSON.parse(raw) as Partial<StoreData>;
     const def = defaultStore();
-    let courses = Array.isArray(parsed.courses) ? (parsed.courses as Course[]) : def.courses;
+    const validIds = new Set(TRACK_COURSES.map((c) => c.id));
+    let courses = Array.isArray(parsed.courses)
+      ? (parsed.courses as Course[]).filter((c) => validIds.has(c.id))
+      : def.courses;
     const existingIds = new Set(courses.map((c) => c.id));
     for (const c of def.courses) {
       if (!existingIds.has(c.id)) courses.push(c);
     }
-    let includedIds = Array.isArray(parsed.includedIds) ? parsed.includedIds : def.includedIds;
+    let includedIds = Array.isArray(parsed.includedIds)
+      ? parsed.includedIds.filter((id) => validIds.has(id))
+      : def.includedIds;
     return { courses, includedIds };
   } catch {
     return defaultStore();

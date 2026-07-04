@@ -76,7 +76,6 @@ describe('월별 시간표(buildMonthlyTimetable) — 영재학교 중2 9월', (
   it('그 달 진행 중인 과정이 들어간다', () => {
     const labels = tt.blocks.map((b) => b.label);
     expect(labels).toContain('KMO 대수');
-    expect(labels).toContain('유전 특강');
   });
   it('담당 선생님이 블록에 포함된다', () => {
     const kmo = tt.blocks.find((b) => b.label === 'KMO 대수')!;

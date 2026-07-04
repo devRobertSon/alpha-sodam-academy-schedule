@@ -1,18 +1,12 @@
-// src/lib/store.ts — 과목/교과 설정 영속화(localStorage) + JSON 백업
-import { Course, GYO_PACE, TRACK_COURSES } from '../data/roadmap';
-
-/** 교과 진도 투영 속도(월/항목)만 보관. 교과 수업 자체는 '공통' 과정으로 관리. */
-export interface GyoConfig {
-  mathMonthsPerItem: number;
-  sciMonthsPerItem: number;
-}
+// src/lib/store.ts — 과목 설정 영속화(localStorage) + JSON 백업
+import { Course, TRACK_COURSES } from '../data/roadmap';
 
 export interface StoreData {
   courses: Course[];
-  gyo: GyoConfig;
+  includedIds: string[];
 }
 
-const KEY = 'asg.store.v2';
+const KEY = 'asg.store.v3';
 
 export function defaultStore(): StoreData {
   return {
@@ -22,10 +16,7 @@ export function defaultStore(): StoreData {
       start: { ...c.start },
       end: { ...c.end },
     })),
-    gyo: {
-      mathMonthsPerItem: GYO_PACE.mathMonthsPerItem,
-      sciMonthsPerItem: GYO_PACE.sciMonthsPerItem,
-    },
+    includedIds: TRACK_COURSES.map((c) => c.id),
   };
 }
 
@@ -40,10 +31,8 @@ export function loadStore(): StoreData {
     for (const c of def.courses) {
       if (!existingIds.has(c.id)) courses.push(c);
     }
-    return {
-      courses,
-      gyo: { ...def.gyo, ...(parsed.gyo ?? {}) },
-    };
+    let includedIds = Array.isArray(parsed.includedIds) ? parsed.includedIds : def.includedIds;
+    return { courses, includedIds };
   } catch {
     return defaultStore();
   }
@@ -53,7 +42,7 @@ export function saveStore(data: StoreData): void {
   try {
     localStorage.setItem(KEY, JSON.stringify(data));
   } catch {
-    /* 저장 실패는 무시(시크릿 모드 등) */
+    /* 저장 실패는 무시 */
   }
 }
 
@@ -63,7 +52,7 @@ export function exportStoreJson(data: StoreData): void {
   const a = document.createElement('a');
   const stamp = new Date().toISOString().slice(0, 10);
   a.href = url;
-  a.download = `알파학원_과목설정_${stamp}.json`;
+  a.download = `소담알파학원_과목설정_${stamp}.json`;
   a.click();
   URL.revokeObjectURL(url);
 }
@@ -74,7 +63,7 @@ export function parseStoreJson(text: string): StoreData {
   if (!Array.isArray(parsed.courses)) throw new Error('courses 배열이 없습니다');
   return {
     courses: parsed.courses as Course[],
-    gyo: { ...def.gyo, ...(parsed.gyo ?? {}) },
+    includedIds: Array.isArray(parsed.includedIds) ? parsed.includedIds : def.includedIds,
   };
 }
 

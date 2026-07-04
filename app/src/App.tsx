@@ -40,7 +40,7 @@ export default function App() {
   const exportRef = useRef<HTMLDivElement>(null);
   const today = new Date().toLocaleDateString('ko-KR');
 
-  const remaining = remainingCourses(store.courses, '일반', atIdx, shifts, includedIds);
+  const remaining = remainingCourses(store.courses, '공통', atIdx, shifts, includedIds);
 
   return (
     <div className="app">
@@ -96,8 +96,8 @@ export default function App() {
                 ① 남은 과목 ({remaining.length}개)
               </h2>
               <p className="muted no-print">
-                막대를 좌우로 드래그하면 수강 시작 월을 옮길 수 있고, 월별 시간표에 바로 반영됩니다.
-                과목 선택은 [관리] 탭에서 변경하세요.
+                막대를 클릭하면 선택되고, 좌우 드래그로 시작 월을 옮길 수 있습니다.
+                선택된 과목의 ✕를 누르면 로드맵에서 제거됩니다.
               </p>
               <div className="roadmap-scroll">
                 <RemainingRoadmap
@@ -105,6 +105,7 @@ export default function App() {
                   atIdx={atIdx}
                   shifts={shifts}
                   onShiftChange={(id, shift) => setShifts((s) => ({ ...s, [id]: shift }))}
+                  onRemove={(id) => setStore({ ...store, includedIds: store.includedIds.filter((i) => i !== id) })}
                   includedIds={includedIds}
                 />
               </div>
@@ -117,7 +118,7 @@ export default function App() {
               </p>
               <MonthlyTimetable
                 courses={store.courses}
-                track={'일반'}
+                track={'공통'}
                 atIdx={atIdx}
                 viewIdx={viewIdx}
                 onViewIdxChange={setViewIdx}

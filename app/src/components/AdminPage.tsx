@@ -19,8 +19,8 @@ import {
   parseStoreJson,
 } from '../lib/store';
 
-const SUBJECTS: Subject[] = ['수학', '과학', '면접'];
-const TRACK_OPTIONS: (Track | '공통')[] = [...TRACKS, '공통'];
+const SUBJECTS: Subject[] = ['과학'];
+const TRACK_OPTIONS: Track[] = [...TRACKS];
 const DAYS: Weekday[] = ['월', '화', '수', '목', '금', '토', '일'];
 const MONTHS = [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 1, 2];
 
@@ -72,11 +72,11 @@ export default function AdminPage({ store, onChange }: Props) {
       id: newCourseId(),
       name: '새 과정',
       track: '공통',
-      subject: '수학',
+      subject: '과학',
       type: '중등교과',
       start: { grade: '중1', month: 3 },
       end: { grade: '중1', month: 8 },
-      schedule: [{ day: '월', start: '17:00', end: '19:00' }],
+      schedule: [{ day: '토', start: '13:30', end: '16:00' }],
       teacher: '',
     };
     onChange({ ...store, courses: [...store.courses, nc], includedIds: [...store.includedIds, nc.id] });
@@ -204,7 +204,7 @@ export default function AdminPage({ store, onChange }: Props) {
                     </div>
                   </td>
                   <td>
-                    <select value={c.track} onChange={(e) => updateCourse(c.id, { track: e.target.value as Track | '공통' })}>
+                    <select value={c.track} onChange={(e) => updateCourse(c.id, { track: e.target.value as Track })}>
                       {TRACK_OPTIONS.map((t) => (
                         <option key={t} value={t}>{t}</option>
                       ))}

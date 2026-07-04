@@ -17,6 +17,7 @@ const HEADER_H = GRADE_H + MONTH_H;
 const BAR_H = 22;
 const ROW_H = 28;
 const PAD = 10;
+const CLICK_THRESHOLD = 4;
 
 const SEASON_TINT: Record<string, string> = {
   봄: '#EEF4EC',
@@ -30,15 +31,18 @@ interface Props {
   atIdx: number;
   shifts: Record<string, number>;
   onShiftChange: (courseId: string, shift: number) => void;
+  onRemove: (courseId: string) => void;
   includedIds: Set<string>;
 }
 
 interface DragState {
   id: string;
   startX: number;
+  startY: number;
   origShift: number;
   baseStart: number;
   baseEnd: number;
+  moved: boolean;
 }
 
 export default function RemainingRoadmap({
@@ -46,9 +50,11 @@ export default function RemainingRoadmap({
   atIdx,
   shifts,
   onShiftChange,
+  onRemove,
   includedIds,
 }: Props) {
   const [drag, setDrag] = useState<DragState | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
   const dragRef = useRef<DragState | null>(null);
   dragRef.current = drag;
 
@@ -59,7 +65,7 @@ export default function RemainingRoadmap({
   const chartW = LABEL_W + plotW;
   const xOf = (idx: number) => LABEL_W + (idx - axisStart) * COL_W;
 
-  const rem = remainingCourses(courses, '일반', atIdx, shifts, includedIds);
+  const rem = remainingCourses(courses, '공통', atIdx, shifts, includedIds);
 
   const levelEnds: number[] = [];
   const placed = rem.map((e) => {
@@ -82,7 +88,15 @@ export default function RemainingRoadmap({
     const onMove = (e: PointerEvent) => {
       const d = dragRef.current;
       if (!d) return;
-      const deltaCols = Math.round((e.clientX - d.startX) / COL_W);
+      const dx = e.clientX - d.startX;
+      const dy = e.clientY - d.startY;
+      if (!d.moved && Math.abs(dx) < CLICK_THRESHOLD && Math.abs(dy) < CLICK_THRESHOLD) return;
+      if (!d.moved) {
+        d.moved = true;
+        dragRef.current = { ...d, moved: true };
+        setDrag((prev) => prev ? { ...prev, moved: true } : null);
+      }
+      const deltaCols = Math.round(dx / COL_W);
       let newShift = d.origShift + deltaCols;
       const minShift = atIdx - d.baseStart;
       const maxShift = 59 - d.baseEnd;
@@ -90,7 +104,13 @@ export default function RemainingRoadmap({
       if (newShift > maxShift) newShift = maxShift;
       onShiftChange(d.id, newShift);
     };
-    const onUp = () => setDrag(null);
+    const onUp = () => {
+      const d = dragRef.current;
+      if (d && !d.moved) {
+        setSelectedId((prev) => (prev === d.id ? null : d.id));
+      }
+      setDrag(null);
+    };
     window.addEventListener('pointermove', onMove);
     window.addEventListener('pointerup', onUp);
     return () => {
@@ -111,6 +131,11 @@ export default function RemainingRoadmap({
       viewBox={`0 0 ${chartW} ${chartH}`}
       role="img"
       aria-label="남은 과정 로드맵"
+      onPointerDown={(ev) => {
+        if (!(ev.target as Element).closest('[data-course-bar]')) {
+          setSelectedId(null);
+        }
+      }}
     >
       <text x={8} y={16} fontSize={13} fontWeight={700} fill="#2C2C2A">
         남은 과정
@@ -158,19 +183,23 @@ export default function RemainingRoadmap({
         const w = (e.endIdx - e.startIdx + 1) * COL_W;
         const y = courseTop + e.level * ROW_H;
         const c = COLORS[e.course.subject] ?? { fill: '#D3D1C7', text: '#2C2C2A' };
-        const isDragging = drag?.id === e.course.id;
+        const isDragging = drag?.id === e.course.id && drag.moved;
+        const isSelected = selectedId === e.course.id;
         return (
           <g
             key={e.course.id}
-            style={{ cursor: 'grab' }}
+            data-course-bar=""
+            style={{ cursor: isDragging ? 'grabbing' : 'grab' }}
             onPointerDown={(ev) => {
               ev.preventDefault();
               setDrag({
                 id: e.course.id,
                 startX: ev.clientX,
+                startY: ev.clientY,
                 origShift: e.shift,
                 baseStart: e.startIdx - e.shift,
                 baseEnd: e.endIdx - e.shift,
+                moved: false,
               });
             }}
           >
@@ -181,8 +210,8 @@ export default function RemainingRoadmap({
               height={BAR_H}
               rx={5}
               fill={c.fill}
-              stroke={isDragging ? '#D6443B' : e.status === '진행중' ? '#2C2C2A' : 'rgba(0,0,0,0.12)'}
-              strokeWidth={isDragging ? 2.5 : e.status === '진행중' ? 1.5 : 0.8}
+              stroke={isDragging ? '#D6443B' : isSelected ? '#2563EB' : e.status === '진행중' ? '#2C2C2A' : 'rgba(0,0,0,0.12)'}
+              strokeWidth={isDragging ? 2.5 : isSelected ? 2 : e.status === '진행중' ? 1.5 : 0.8}
             />
             {w >= 30 && (
               <text x={x + w / 2} y={y + BAR_H / 2 - 1} fontSize={9.5} fill={c.text} textAnchor="middle" fontWeight={600}>
@@ -193,6 +222,22 @@ export default function RemainingRoadmap({
               <text x={x + w / 2} y={y + BAR_H / 2 + 9} fontSize={8} fill={c.text} textAnchor="middle" opacity={0.8}>
                 {e.course.teacher}
               </text>
+            )}
+            {isSelected && (
+              <g
+                style={{ cursor: 'pointer' }}
+                onPointerDown={(ev) => {
+                  ev.stopPropagation();
+                  ev.preventDefault();
+                  onRemove(e.course.id);
+                  setSelectedId(null);
+                }}
+              >
+                <circle cx={x + w - 1} cy={y + 1} r={7} fill="#DC2626" />
+                <text x={x + w - 1} y={y + 1 + 3.5} fontSize={9} fill="#fff" textAnchor="middle" fontWeight={700}>
+                  ×
+                </text>
+              </g>
             )}
           </g>
         );

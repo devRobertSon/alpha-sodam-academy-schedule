@@ -58,7 +58,7 @@ function Block({ block, conflict }: { block: TimetableBlock; conflict: boolean }
   const top = HEAD_H + minToSlot(toMin(block.slot.start)) * SLOT_H;
   const height = ((toMin(block.slot.end) - toMin(block.slot.start)) / SLOT_MIN) * SLOT_H;
   const left = TIME_COL_W + dayIdx * DAY_W;
-  const c = COLORS[block.subject];
+  const c = COLORS[block.subject] ?? { fill: '#D3D1C7', text: '#2C2C2A' };
   return (
     <div
       ref={setNodeRef}
@@ -184,13 +184,7 @@ export default function MonthlyTimetable({
 
       <div className="tt-toolbar no-print">
         <span>
-          <span className="swatch" style={{ background: COLORS.수학.fill }} /> 수학
-        </span>
-        <span>
           <span className="swatch" style={{ background: COLORS.과학.fill }} /> 과학
-        </span>
-        <span>
-          <span className="swatch" style={{ background: COLORS.면접.fill }} /> 면접
         </span>
         <span className="hint">블록을 드래그해 요일·시간을 옮기세요 · 수업 추가는 [관리] 탭</span>
       </div>
@@ -251,7 +245,7 @@ export default function MonthlyTimetable({
           <ul>
             {lessons.map((b) => (
               <li key={b.key}>
-                <span className="dot" style={{ background: COLORS[b.subject as Subject].fill }} />
+                <span className="dot" style={{ background: (COLORS[b.subject as Subject] ?? { fill: '#D3D1C7' }).fill }} />
                 {b.slot.day} {b.slot.start}~{b.slot.end} · {b.label}
                 {b.teacher ? ` · ${b.teacher} 쌤` : ''}
               </li>

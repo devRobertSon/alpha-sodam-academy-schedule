@@ -41,6 +41,7 @@ interface Props {
   onShiftChange: (courseId: string, shift: number) => void;
   gyoShift: { math: number; sci: number };
   onGyoShiftChange: (subject: 'math' | 'sci', shift: number) => void;
+  includedIds?: Set<string>;
 }
 
 interface DragState {
@@ -67,6 +68,7 @@ export default function RemainingRoadmap({
   onShiftChange,
   gyoShift,
   onGyoShiftChange,
+  includedIds,
 }: Props) {
   const [drag, setDrag] = useState<DragState | null>(null);
   const dragRef = useRef<DragState | null>(null);
@@ -82,7 +84,7 @@ export default function RemainingRoadmap({
   const chartW = LABEL_W + plotW;
   const xOf = (idx: number) => LABEL_W + (idx - axisStart) * COL_W;
 
-  const rem = remainingCourses(courses, track, atIdx, shifts);
+  const rem = remainingCourses(courses, track, atIdx, shifts, includedIds);
 
   // 레벨 쌓기(겹치면 아래로)
   const levelEnds: number[] = [];

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import ConsultForm, { ConsultInfo } from './components/ConsultForm';
+import CoursePicker from './components/CoursePicker';
 import RemainingRoadmap from './components/RemainingRoadmap';
 import MonthlyTimetable from './components/MonthlyTimetable';
 import AdminPage from './components/AdminPage';
@@ -26,6 +27,10 @@ const DEFAULT_CONSULT: ConsultInfo = {
   sciIdx: SCI_GYO_MID_SEQUENCE.indexOf('중2-2학기'),
 };
 
+function getDefaultIncludedIds(courses: { id: string; track: string }[], track: Track): Set<string> {
+  return new Set(courses.filter((c) => c.track === track || c.track === '공통').map((c) => c.id));
+}
+
 export default function App() {
   const [page, setPage] = useState<Page>('consult');
   const [store, setStoreState] = useState<StoreData>(() => loadStore());
@@ -35,18 +40,50 @@ export default function App() {
   };
 
   const [info, setInfo] = useState<ConsultInfo>(DEFAULT_CONSULT);
-  const [track, setTrack] = useState<Track>('영재학교');
+  const [track, setTrack] = useState<Track>('일반');
   const [shifts, setShifts] = useState<Record<string, number>>({});
   const [gyoShift, setGyoShift] = useState<{ math: number; sci: number }>({ math: 0, sci: 0 });
   const [slotOverrides, setSlotOverrides] = useState<Record<string, TimeSlot>>({});
+  const [includedIds, setIncludedIds] = useState<Set<string>>(() =>
+    getDefaultIncludedIds(store.courses, '일반')
+  );
 
   const atIdx = useMemo(() => nowIndex(info.grade, info.month), [info.grade, info.month]);
   const [viewIdx, setViewIdx] = useState<number>(atIdx);
 
-  // 상담 월이 바뀌면 보는 달이 과거가 되지 않도록 클램프
   useEffect(() => {
     setViewIdx((v) => Math.min(59, Math.max(atIdx, v)));
   }, [atIdx]);
+
+  const handleTrackChange = (newTrack: Track) => {
+    setTrack(newTrack);
+    setIncludedIds(getDefaultIncludedIds(store.courses, newTrack));
+  };
+
+  const handleToggleCourse = (courseId: string) => {
+    setIncludedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(courseId)) next.delete(courseId);
+      else next.add(courseId);
+      return next;
+    });
+  };
+
+  const handleAddAll = (ids: string[]) => {
+    setIncludedIds((prev) => {
+      const next = new Set(prev);
+      ids.forEach((id) => next.add(id));
+      return next;
+    });
+  };
+
+  const handleRemoveAll = (ids: string[]) => {
+    setIncludedIds((prev) => {
+      const next = new Set(prev);
+      ids.forEach((id) => next.delete(id));
+      return next;
+    });
+  };
 
   const exportRef = useRef<HTMLDivElement>(null);
 
@@ -55,13 +92,13 @@ export default function App() {
   const sciProgress = sciSeq[info.sciIdx];
   const today = new Date().toLocaleDateString('ko-KR');
 
-  const remaining = remainingCourses(store.courses, track, atIdx, shifts);
+  const remaining = remainingCourses(store.courses, track, atIdx, shifts, includedIds);
 
   return (
     <div className="app">
       <header className="app-header no-print">
         <div className="brand">
-          <h1>알파학원 입시 상담 로드맵</h1>
+          <h1>소담 알파학원 입시 상담 로드맵</h1>
           <nav className="page-nav">
             <button className={page === 'consult' ? 'active' : ''} onClick={() => setPage('consult')}>
               상담
@@ -95,12 +132,22 @@ export default function App() {
                   role="tab"
                   aria-selected={t === track}
                   className={`track-tab ${t === track ? 'active' : ''}`}
-                  onClick={() => setTrack(t)}
+                  onClick={() => handleTrackChange(t)}
                 >
                   {t}
                 </button>
               ))}
             </div>
+          </section>
+
+          <section className="card no-print">
+            <CoursePicker
+              courses={store.courses}
+              includedIds={includedIds}
+              onToggle={handleToggleCourse}
+              onAddAll={handleAddAll}
+              onRemoveAll={handleRemoveAll}
+            />
           </section>
 
           <ExportBar targetRef={exportRef} />
@@ -127,8 +174,18 @@ export default function App() {
               </h2>
               <p className="muted no-print">
                 막대를 좌우로 드래그하면 수강 시작 월을 옮길 수 있고, 월별 시간표에 바로 반영됩니다.
+                과목 선택 패널에서 체크박스로 과목을 추가/제거하세요.
               </p>
-              <div className="roadmap-scroll">
+              <div
+                className="roadmap-scroll"
+                onDragOver={(e) => { e.preventDefault(); e.dataTransfer.dropEffect = 'copy'; }}
+                onDrop={(e) => {
+                  const courseId = e.dataTransfer.getData('courseId');
+                  if (courseId && !includedIds.has(courseId)) {
+                    handleToggleCourse(courseId);
+                  }
+                }}
+              >
                 <RemainingRoadmap
                   courses={store.courses}
                   gyo={store.gyo}
@@ -139,6 +196,7 @@ export default function App() {
                   onShiftChange={(id, shift) => setShifts((s) => ({ ...s, [id]: shift }))}
                   gyoShift={gyoShift}
                   onGyoShiftChange={(subject, shift) => setGyoShift((g) => ({ ...g, [subject]: shift }))}
+                  includedIds={includedIds}
                 />
               </div>
             </section>
@@ -157,12 +215,13 @@ export default function App() {
                 shifts={shifts}
                 slotOverrides={slotOverrides}
                 onSlotOverrideChange={(key, slot) => setSlotOverrides((s) => ({ ...s, [key]: slot }))}
+                includedIds={includedIds}
               />
             </section>
           </div>
 
           <footer className="app-footer no-print">
-            <small>목표 학교 1곳 기준 · 남은 과목만 표시 · 과정 내용은 [관리] 탭에서 수정</small>
+            <small>과목 선택 패널에서 과목을 자유롭게 추가·제거할 수 있습니다 · 과정 내용은 [관리] 탭에서 수정</small>
           </footer>
         </>
       )}

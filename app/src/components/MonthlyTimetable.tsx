@@ -30,6 +30,7 @@ interface Props {
   shifts: Record<string, number>;
   slotOverrides: Record<string, TimeSlot>;
   onSlotOverrideChange: (sessionKey: string, slot: TimeSlot) => void;
+  includedIds?: Set<string>;
 }
 
 const DAYS: Weekday[] = ['월', '화', '수', '목', '금', '토', '일'];
@@ -124,12 +125,13 @@ export default function MonthlyTimetable({
   shifts,
   slotOverrides,
   onSlotOverrideChange,
+  includedIds,
 }: Props) {
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 4 } }));
 
   const tt = useMemo(
-    () => buildMonthlyTimetable(courses, track, viewIdx, shifts, slotOverrides),
-    [courses, track, viewIdx, shifts, slotOverrides]
+    () => buildMonthlyTimetable(courses, track, viewIdx, shifts, slotOverrides, includedIds),
+    [courses, track, viewIdx, shifts, slotOverrides, includedIds]
   );
 
   const conflictKeys = useMemo(() => {

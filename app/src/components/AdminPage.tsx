@@ -20,6 +20,7 @@ import {
 
 const SUBJECTS: Subject[] = ['수학', '과학', '면접'];
 const TRACK_OPTIONS: (Track | '공통')[] = [...TRACKS, '공통'];
+
 const DAYS: Weekday[] = ['월', '화', '수', '목', '금', '토', '일'];
 const MONTHS = [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 1, 2];
 

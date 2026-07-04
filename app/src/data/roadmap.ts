@@ -1,6 +1,6 @@
 // src/data/roadmap.ts
 export type Grade = '초5' | '초6' | '중1' | '중2' | '중3';
-export type Track = '영재학교' | '과학고' | '국제고' | '외고' | '전사고';
+export type Track = '영재학교' | '과학고' | '국제고' | '외고' | '전사고' | '일반';
 export type Subject = '수학' | '과학' | '면접';
 export type CourseType =
   | '영재학교입시'
@@ -25,7 +25,7 @@ export type Weekday = '월' | '화' | '수' | '목' | '금' | '토' | '일';
 export type Season = '봄' | '여름' | '가을' | '겨울';
 
 export const GRADES: Grade[] = ['초5', '초6', '중1', '중2', '중3'];
-export const TRACKS: Track[] = ['영재학교', '과학고', '국제고', '외고', '전사고'];
+export const TRACKS: Track[] = ['일반', '영재학교', '과학고', '국제고', '외고', '전사고'];
 export const ACADEMIC_MONTHS: number[] = [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 1, 2]; // 학사연도 월 순서
 
 export const COLORS = {
@@ -138,6 +138,17 @@ export const TRACK_COURSES: Course[] = [
   // 전사고
   { id: 'js_int_sci1', name: '통합과학1', track: '전사고', subject: '과학', type: '고등선행',
     start: { grade: '중3', month: 9 }, end: { grade: '중3', month: 2 }, schedule: [{ day: '목', start: '17:00', end: '19:00' }] },
+  // 일반 (내신·선행 중심)
+  { id: 'gen_mid_math', name: '중등내신 수학', track: '일반', subject: '수학', type: '중등선행',
+    start: { grade: '중1', month: 3 }, end: { grade: '중3', month: 2 }, schedule: [{ day: '화', start: '17:00', end: '19:00' }, { day: '목', start: '17:00', end: '19:00' }] },
+  { id: 'gen_mid_sci', name: '중등내신 과학', track: '일반', subject: '과학', type: '중등선행',
+    start: { grade: '중1', month: 3 }, end: { grade: '중3', month: 2 }, schedule: [{ day: '수', start: '17:00', end: '19:00' }] },
+  { id: 'gen_hs_math', name: '고등선행 수학', track: '일반', subject: '수학', type: '고등선행',
+    start: { grade: '중2', month: 3 }, end: { grade: '중3', month: 2 }, schedule: [{ day: '토', start: '10:00', end: '12:00' }] },
+  { id: 'gen_hs_sci', name: '고등선행 과학', track: '일반', subject: '과학', type: '고등선행',
+    start: { grade: '중2', month: 6 }, end: { grade: '중3', month: 2 }, schedule: [{ day: '토', start: '13:00', end: '15:00' }] },
+  { id: 'gen_naesin_math', name: '고등내신 수학', track: '일반', subject: '수학', type: '고등내신',
+    start: { grade: '중3', month: 3 }, end: { grade: '중3', month: 2 }, schedule: [{ day: '금', start: '18:00', end: '20:00' }] },
   // 교과(공통) — 모든 목표 학교 학생이 공통으로 수강. 과목별 수업으로 분리.
   { id: 'gyo_math', name: '수학 교과', track: '공통', subject: '수학', type: '중등선행',
     start: { grade: '초5', month: 3 }, end: { grade: '중3', month: 2 }, schedule: [{ day: '수', start: '16:00', end: '18:00' }, { day: '토', start: '14:00', end: '16:00' }], teacher: '박서연' },

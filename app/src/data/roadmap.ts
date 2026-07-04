@@ -11,9 +11,20 @@ export const GRADES: Grade[] = ['초5', '초6', '중1', '중2', '중3'];
 export const TRACKS: Track[] = ['공통'];
 export const ACADEMIC_MONTHS: number[] = [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 1, 2];
 
+// 브랜드 팔레트(알파학원 로고) — 스카이블루→네이비 그라데이션 기준.
+// 과목 막대는 교과 유형으로 구분: 중등=블루, 고등=네이비.
 export const COLORS: Record<string, { fill: string; text: string }> = {
-  과학: { fill: '#F0997B', text: '#4A1B0C' },
+  과학: { fill: '#2C79D0', text: '#FFFFFF' },
 };
+
+export const COURSE_COLORS: Record<CourseType, { fill: string; text: string }> = {
+  중등교과: { fill: '#2C79D0', text: '#FFFFFF' },
+  고등교과: { fill: '#1C2B70', text: '#FFFFFF' },
+};
+
+export function courseColor(type?: CourseType): { fill: string; text: string } {
+  return (type && COURSE_COLORS[type]) || { fill: '#2C79D0', text: '#FFFFFF' };
+}
 
 export function academicMonthIndex(month: number): number {
   return (month + 9) % 12;

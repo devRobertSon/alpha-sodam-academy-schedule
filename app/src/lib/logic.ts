@@ -1,5 +1,5 @@
 // src/lib/logic.ts — 상담 도구 로직(남은 과목 + 월별 시간표)
-import { Course, Grade, Subject, TimeSlot, Track, gmIndex } from '../data/roadmap';
+import { Course, CourseType, Grade, Subject, TimeSlot, Track, gmIndex } from '../data/roadmap';
 
 export type Status = '완료' | '진행중' | '예정';
 
@@ -61,6 +61,7 @@ export interface TimetableBlock {
   sessionIdx?: number;
   label: string;
   subject: Subject;
+  type?: CourseType;
   teacher?: string;
   slot: TimeSlot;
   movable: boolean;
@@ -122,6 +123,7 @@ export function buildMonthlyTimetable(
         sessionIdx: i,
         label: c.name,
         subject: c.subject,
+        type: c.type,
         teacher: c.teacher,
         slot,
         movable: true,

@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import {
-  COLORS,
   Course,
+  courseColor,
   GRADES,
   gradeOfIndex,
   monthOfIndex,
@@ -33,6 +33,7 @@ interface Props {
   onShiftChange: (courseId: string, shift: number) => void;
   onRemove: (courseId: string) => void;
   includedIds: Set<string>;
+  showHeading?: boolean;
 }
 
 interface DragState {
@@ -52,6 +53,7 @@ export default function RemainingRoadmap({
   onShiftChange,
   onRemove,
   includedIds,
+  showHeading = true,
 }: Props) {
   const [drag, setDrag] = useState<DragState | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -137,9 +139,11 @@ export default function RemainingRoadmap({
         }
       }}
     >
-      <text x={8} y={16} fontSize={13} fontWeight={700} fill="#2C2C2A">
-        남은 과정
-      </text>
+      {showHeading && (
+        <text x={8} y={16} fontSize={13} fontWeight={700} fill="#16224E">
+          남은 과정
+        </text>
+      )}
 
       {Array.from({ length: cols }).map((_, k) => {
         const idx = axisStart + k;
@@ -182,7 +186,7 @@ export default function RemainingRoadmap({
         const x = xOf(e.startIdx);
         const w = (e.endIdx - e.startIdx + 1) * COL_W;
         const y = courseTop + e.level * ROW_H;
-        const c = COLORS[e.course.subject] ?? { fill: '#D3D1C7', text: '#2C2C2A' };
+        const c = courseColor(e.course.type);
         const isDragging = drag?.id === e.course.id && drag.moved;
         const isSelected = selectedId === e.course.id;
         return (
@@ -210,7 +214,7 @@ export default function RemainingRoadmap({
               height={BAR_H}
               rx={5}
               fill={c.fill}
-              stroke={isDragging ? '#D6443B' : isSelected ? '#2563EB' : e.status === '진행중' ? '#2C2C2A' : 'rgba(0,0,0,0.12)'}
+              stroke={isDragging ? '#1E63C6' : isSelected ? '#1E63C6' : e.status === '진행중' ? '#16224E' : 'rgba(0,0,0,0.12)'}
               strokeWidth={isDragging ? 2.5 : isSelected ? 2 : e.status === '진행중' ? 1.5 : 0.8}
             />
             {w >= 30 && (
@@ -243,8 +247,8 @@ export default function RemainingRoadmap({
         );
       })}
 
-      <line x1={xOf(atIdx)} y1={HEADER_H} x2={xOf(atIdx)} y2={chartH} stroke="#D6443B" strokeWidth={1.5} strokeDasharray="4 3" />
-      <text x={xOf(atIdx) + 4} y={HEADER_H + 12} fontSize={9} fontWeight={700} fill="#D6443B">
+      <line x1={xOf(atIdx)} y1={HEADER_H} x2={xOf(atIdx)} y2={chartH} stroke="#E3A72E" strokeWidth={1.5} strokeDasharray="4 3" />
+      <text x={xOf(atIdx) + 4} y={HEADER_H + 12} fontSize={9} fontWeight={700} fill="#B9821B">
         오늘 {gradeOfIndex(atIdx)} {monthOfIndex(atIdx)}월
       </text>
     </svg>

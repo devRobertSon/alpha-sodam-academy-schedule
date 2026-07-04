@@ -4,6 +4,7 @@ import RemainingRoadmap from './components/RemainingRoadmap';
 import MonthlyTimetable from './components/MonthlyTimetable';
 import AdminPage from './components/AdminPage';
 import ExportBar from './components/ExportBar';
+import PrintView from './components/PrintView';
 import { TimeSlot } from './data/roadmap';
 import { nowIndex, remainingCourses } from './lib/logic';
 import { StoreData, loadStore, saveStore } from './lib/store';
@@ -76,7 +77,7 @@ export default function App() {
 
           <ExportBar targetRef={exportRef} />
 
-          <div className="export-region" ref={exportRef}>
+          <div className="export-region screen-only" ref={exportRef}>
             <div className="export-summary">
               <h2>
                 {info.studentName ? `${info.studentName} 학생 · ` : ''}
@@ -129,6 +130,18 @@ export default function App() {
               />
             </section>
           </div>
+
+          <PrintView
+            courses={store.courses}
+            atIdx={atIdx}
+            shifts={shifts}
+            slotOverrides={slotOverrides}
+            includedIds={includedIds}
+            studentName={info.studentName}
+            grade={info.grade}
+            month={info.month}
+            today={today}
+          />
 
           <footer className="app-footer no-print">
             <small>과목 선택은 [관리] 탭에서 변경 가능합니다</small>

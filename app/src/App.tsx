@@ -10,8 +10,6 @@ import {
   SCI_GYO_HS_PARALLEL,
   SCI_GYO_MID_SEQUENCE,
   TimeSlot,
-  Track,
-  TRACKS,
 } from './data/roadmap';
 import { nowIndex, remainingCourses } from './lib/logic';
 import { StoreData, loadStore, saveStore } from './lib/store';
@@ -27,10 +25,6 @@ const DEFAULT_CONSULT: ConsultInfo = {
   sciIdx: SCI_GYO_MID_SEQUENCE.indexOf('중2-2학기'),
 };
 
-function getDefaultIncludedIds(courses: { id: string; track: string }[], track: Track): Set<string> {
-  return new Set(courses.filter((c) => c.track === track || c.track === '공통').map((c) => c.id));
-}
-
 export default function App() {
   const [page, setPage] = useState<Page>('consult');
   const [store, setStoreState] = useState<StoreData>(() => loadStore());
@@ -40,12 +34,11 @@ export default function App() {
   };
 
   const [info, setInfo] = useState<ConsultInfo>(DEFAULT_CONSULT);
-  const [track, setTrack] = useState<Track>('일반');
   const [shifts, setShifts] = useState<Record<string, number>>({});
   const [gyoShift, setGyoShift] = useState<{ math: number; sci: number }>({ math: 0, sci: 0 });
   const [slotOverrides, setSlotOverrides] = useState<Record<string, TimeSlot>>({});
   const [includedIds, setIncludedIds] = useState<Set<string>>(() =>
-    getDefaultIncludedIds(store.courses, '일반')
+    new Set(store.courses.map((c) => c.id))
   );
 
   const atIdx = useMemo(() => nowIndex(info.grade, info.month), [info.grade, info.month]);
@@ -54,11 +47,6 @@ export default function App() {
   useEffect(() => {
     setViewIdx((v) => Math.min(59, Math.max(atIdx, v)));
   }, [atIdx]);
-
-  const handleTrackChange = (newTrack: Track) => {
-    setTrack(newTrack);
-    setIncludedIds(getDefaultIncludedIds(store.courses, newTrack));
-  };
 
   const handleToggleCourse = (courseId: string) => {
     setIncludedIds((prev) => {
@@ -92,7 +80,7 @@ export default function App() {
   const sciProgress = sciSeq[info.sciIdx];
   const today = new Date().toLocaleDateString('ko-KR');
 
-  const remaining = remainingCourses(store.courses, track, atIdx, shifts, includedIds);
+  const remaining = remainingCourses(store.courses, '일반', atIdx, shifts, includedIds);
 
   return (
     <div className="app">
@@ -110,7 +98,7 @@ export default function App() {
         </div>
         <p>
           {page === 'consult'
-            ? '학생의 현재 학년·월·진도를 입력하면, 목표 학교 합격까지 남은 과목과 월별 시간표를 만들어 학부모님께 전달할 수 있습니다.'
+            ? '학생의 현재 학년·월·진도를 입력하면, 남은 과목과 월별 시간표를 만들어 학부모님께 전달할 수 있습니다.'
             : '과정의 개설 월·기간·요일·시작시간·담당 선생님을 편집합니다. (브라우저 자동 저장 · JSON 백업 가능)'}
         </p>
       </header>
@@ -124,20 +112,6 @@ export default function App() {
           <section className="card no-print">
             <h2>상담 정보</h2>
             <ConsultForm value={info} onChange={setInfo} />
-            <div className="track-tabs" role="tablist" style={{ marginTop: 12 }}>
-              <span className="tabs-label">목표 학교</span>
-              {TRACKS.map((t) => (
-                <button
-                  key={t}
-                  role="tab"
-                  aria-selected={t === track}
-                  className={`track-tab ${t === track ? 'active' : ''}`}
-                  onClick={() => handleTrackChange(t)}
-                >
-                  {t}
-                </button>
-              ))}
-            </div>
           </section>
 
           <section className="card no-print">
@@ -156,7 +130,7 @@ export default function App() {
             <div className="export-summary">
               <h2>
                 {info.studentName ? `${info.studentName} 학생 · ` : ''}
-                {track} 준비 로드맵
+                준비 로드맵
               </h2>
               <p>
                 현재{' '}
@@ -170,7 +144,7 @@ export default function App() {
 
             <section className="card">
               <h2>
-                ① {track} 합격까지 남은 과목 ({remaining.length}개)
+                ① 남은 과목 ({remaining.length}개)
               </h2>
               <p className="muted no-print">
                 막대를 좌우로 드래그하면 수강 시작 월을 옮길 수 있고, 월별 시간표에 바로 반영됩니다.
@@ -190,7 +164,7 @@ export default function App() {
                   courses={store.courses}
                   gyo={store.gyo}
                   form={info}
-                  track={track}
+                  track={'일반'}
                   atIdx={atIdx}
                   shifts={shifts}
                   onShiftChange={(id, shift) => setShifts((s) => ({ ...s, [id]: shift }))}
@@ -208,7 +182,7 @@ export default function App() {
               </p>
               <MonthlyTimetable
                 courses={store.courses}
-                track={track}
+                track={'일반'}
                 atIdx={atIdx}
                 viewIdx={viewIdx}
                 onViewIdxChange={setViewIdx}

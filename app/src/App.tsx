@@ -40,7 +40,7 @@ export default function App() {
   const exportRef = useRef<HTMLDivElement>(null);
   const today = new Date().toLocaleDateString('ko-KR');
 
-  const remaining = remainingCourses(store.courses, '일반', atIdx, shifts, includedIds);
+  const remaining = remainingCourses(store.courses, '공통', atIdx, shifts, includedIds);
 
   return (
     <div className="app">
@@ -117,7 +117,7 @@ export default function App() {
               </p>
               <MonthlyTimetable
                 courses={store.courses}
-                track={'일반'}
+                track={'공통'}
                 atIdx={atIdx}
                 viewIdx={viewIdx}
                 onViewIdxChange={setViewIdx}

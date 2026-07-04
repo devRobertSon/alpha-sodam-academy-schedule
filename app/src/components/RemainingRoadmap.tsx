@@ -59,7 +59,7 @@ export default function RemainingRoadmap({
   const chartW = LABEL_W + plotW;
   const xOf = (idx: number) => LABEL_W + (idx - axisStart) * COL_W;
 
-  const rem = remainingCourses(courses, '일반', atIdx, shifts, includedIds);
+  const rem = remainingCourses(courses, '공통', atIdx, shifts, includedIds);
 
   const levelEnds: number[] = [];
   const placed = rem.map((e) => {

@@ -35,8 +35,13 @@ export function loadStore(): StoreData {
     if (!raw) return defaultStore();
     const parsed = JSON.parse(raw) as Partial<StoreData>;
     const def = defaultStore();
+    let courses = Array.isArray(parsed.courses) ? (parsed.courses as Course[]) : def.courses;
+    const existingIds = new Set(courses.map((c) => c.id));
+    for (const c of def.courses) {
+      if (!existingIds.has(c.id)) courses.push(c);
+    }
     return {
-      courses: Array.isArray(parsed.courses) ? (parsed.courses as Course[]) : def.courses,
+      courses,
       gyo: { ...def.gyo, ...(parsed.gyo ?? {}) },
     };
   } catch {

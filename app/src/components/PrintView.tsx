@@ -26,7 +26,7 @@ interface Props {
 
 const DAYS: Weekday[] = ['월', '화', '수', '목', '금', '토', '일'];
 const TIME_W = 34;
-const DAY_W = 40;
+const DAY_W = 48;
 const SLOT_H = 16;
 const HEAD_H = 20;
 const SLOT_MIN = 30;
@@ -168,7 +168,7 @@ export default function PrintView({
   return (
     <div className="print-only">
       {/* 1페이지 — 로드맵 */}
-      <section className="print-page print-roadmap-page">
+      <section className="print-page print-roadmap-page" data-pngname="로드맵">
         <h1 className="print-title">로드맵</h1>
         <div className="print-sub">
           {studentName ? `${studentName} 학생 · ` : ''}
@@ -189,7 +189,11 @@ export default function PrintView({
 
       {/* 2페이지~ — 월별 시간표 2개씩 */}
       {pages.map((pair, pi) => (
-        <section className="print-page print-tt-page" key={`pg-${pi}`}>
+        <section
+          className="print-page print-tt-page"
+          key={`pg-${pi}`}
+          data-pngname={pair.map((m) => `${gradeOfIndex(m)}_${monthOfIndex(m)}월`).join('+')}
+        >
           {pair.map((mIdx) => (
             <div className="print-tt" key={`tt-${mIdx}`}>
               <div className="print-tt-title">

@@ -75,7 +75,7 @@ export default function App() {
             <ConsultForm value={info} onChange={setInfo} />
           </section>
 
-          <ExportBar targetRef={exportRef} />
+          <ExportBar />
 
           <div className="export-region screen-only" ref={exportRef}>
             <div className="export-summary">

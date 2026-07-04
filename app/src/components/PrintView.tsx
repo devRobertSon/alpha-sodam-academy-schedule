@@ -53,15 +53,15 @@ function StaticTimetable({
 }) {
   const { blocks } = buildMonthlyTimetable(courses, '공통', monthIdx, shifts, slotOverrides, includedIds);
 
+  // 기본 시간대 13~19시, 그 밖의 수업이 있으면 그만큼 확장
   let minStart = 13 * 60;
-  let maxEnd = 16 * 60;
+  let maxEnd = 19 * 60;
   if (blocks.length) {
-    minStart = Math.min(...blocks.map((b) => toMin(b.slot.start)));
-    maxEnd = Math.max(...blocks.map((b) => toMin(b.slot.end)));
+    minStart = Math.min(minStart, ...blocks.map((b) => toMin(b.slot.start)));
+    maxEnd = Math.max(maxEnd, ...blocks.map((b) => toMin(b.slot.end)));
   }
   minStart = Math.floor(minStart / 60) * 60;
   maxEnd = Math.ceil(maxEnd / 60) * 60;
-  if (maxEnd - minStart < 3 * 60) maxEnd = minStart + 3 * 60;
 
   const slotCount = Math.max(1, (maxEnd - minStart) / SLOT_MIN);
   const gridW = TIME_W + DAYS.length * DAY_W;

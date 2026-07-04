@@ -534,6 +534,366 @@ body {
   }
 }
 
+/* ── 홈(랜딩) ─────────────────────────────── */
+.app.home {
+  max-width: 720px;
+  padding-top: 48px;
+}
+.home-header {
+  text-align: center;
+  margin-bottom: 28px;
+}
+.home-logo {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 8px;
+}
+.home-header h1 {
+  font-size: 28px;
+  margin: 4px 0;
+  letter-spacing: -0.01em;
+}
+.home-header p {
+  color: var(--muted);
+  margin: 0;
+}
+.home-cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+@media (max-width: 560px) {
+  .home-cards { grid-template-columns: 1fr; }
+}
+.home-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  text-align: left;
+  padding: 24px 22px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  cursor: pointer;
+  transition: border-color 0.12s, box-shadow 0.12s, transform 0.06s;
+}
+.home-card:hover {
+  border-color: var(--accent);
+  box-shadow: 0 6px 20px rgba(30, 99, 198, 0.12);
+}
+.home-card:active {
+  transform: translateY(1px);
+}
+.home-card-emoji {
+  font-size: 30px;
+}
+.home-card-title {
+  font-size: 18px;
+  font-weight: 750;
+  color: var(--ink);
+}
+.home-card-desc {
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.45;
+}
+
+/* 홈 링크 / 브랜드 타이틀 */
+.brand-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.home-link {
+  border: 1px solid var(--line);
+  background: #fff;
+  border-radius: 8px;
+  padding: 5px 10px;
+  font-size: 13px;
+  cursor: pointer;
+  color: var(--muted);
+}
+.home-link:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* ── 학생 개별 평가 ───────────────────────── */
+.assess-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 4px 0 0;
+}
+.assess-tabs button {
+  padding: 8px 16px;
+  border: 1px solid var(--line);
+  background: #fff;
+  border-radius: 999px 999px 0 0;
+  cursor: pointer;
+  font-size: 14px;
+}
+.assess-tabs button.active {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+.assess-pane {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.assess-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.assess-row.wrap {
+  gap: 14px;
+}
+.assess-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--muted);
+  font-weight: 600;
+}
+.assess-field input,
+.assess-field select,
+.assess-input {
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  font-size: 14px;
+  background: #fff;
+  color: var(--ink);
+  font-weight: 400;
+}
+.assess-input {
+  min-width: 180px;
+}
+.assess-row .primary,
+.assess-card .primary {
+  padding: 8px 14px;
+  border: 1px solid var(--accent);
+  background: var(--accent);
+  color: #fff;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+}
+.assess-row .ghost,
+.assess-card .ghost {
+  padding: 8px 14px;
+  border: 1px solid var(--line);
+  background: #fff;
+  color: var(--muted);
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.assess-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.assess-table th,
+.assess-table td {
+  border-bottom: 1px solid var(--line);
+  padding: 7px 8px;
+  text-align: left;
+}
+.assess-table th {
+  background: var(--accent-soft);
+  font-weight: 600;
+  font-size: 12px;
+}
+.assess-table input,
+.assess-table select {
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 5px 7px;
+  font-size: 13px;
+  background: #fff;
+  max-width: 130px;
+}
+.assess-table input.wide {
+  max-width: 100%;
+  width: 100%;
+}
+.assess-table .del {
+  border: 1px solid #f3b4ad;
+  background: #fcebe9;
+  color: #8a241c;
+  border-radius: 6px;
+  cursor: pointer;
+  padding: 3px 9px;
+}
+
+.assess-card {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 14px;
+  background: #fff;
+}
+.assess-card.draft {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+.assess-card h3 {
+  margin: 0 0 10px;
+  font-size: 15px;
+}
+.assess-warn {
+  background: #fff6e5;
+  border: 1px solid #f2d79a;
+  color: #8a6114;
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-size: 12.5px;
+  margin-bottom: 10px;
+}
+.assess-badge {
+  font-size: 12px;
+  color: var(--accent);
+  border: 1px solid var(--accent);
+  border-radius: 999px;
+  padding: 2px 9px;
+}
+.assess-preview-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin: 8px 0;
+}
+.assess-chip {
+  font-size: 12px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 3px 8px;
+  background: #fff;
+}
+.assess-chip b {
+  color: var(--accent);
+  margin-right: 3px;
+}
+
+/* O/X 채점 그리드 */
+.ox-grid {
+  display: grid;
+  grid-template-columns: repeat(10, 1fr);
+  gap: 8px;
+}
+@media (max-width: 720px) {
+  .ox-grid { grid-template-columns: repeat(5, 1fr); }
+}
+.ox-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 6px 4px;
+  background: #fff;
+}
+.ox-no {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--ink);
+}
+.ox-btns {
+  display: flex;
+  gap: 3px;
+}
+.ox-btns button {
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  border: 1px solid var(--line);
+  background: #fff;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--muted);
+}
+.ox-o.on {
+  background: #2C79D0;
+  border-color: #2C79D0;
+  color: #fff;
+}
+.ox-x.on {
+  background: #D6443B;
+  border-color: #D6443B;
+  color: #fff;
+}
+.assess-scorebar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding: 12px 14px;
+  background: var(--accent-soft);
+  border-radius: 10px;
+  font-size: 14px;
+}
+.assess-scorebar b {
+  font-size: 16px;
+  color: var(--accent);
+}
+.assess-scorebar .primary {
+  margin-left: auto;
+  padding: 8px 16px;
+  border: 1px solid var(--accent);
+  background: var(--accent);
+  color: #fff;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+/* 유형별 정답률 막대 */
+.type-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+.type-bar-row {
+  display: grid;
+  grid-template-columns: 140px 1fr 96px;
+  align-items: center;
+  gap: 10px;
+}
+@media (max-width: 560px) {
+  .type-bar-row { grid-template-columns: 96px 1fr 80px; }
+}
+.type-bar-label {
+  font-size: 12.5px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.type-bar-track {
+  height: 16px;
+  background: #eef1f6;
+  border-radius: 8px;
+  overflow: hidden;
+}
+.type-bar-fill {
+  height: 100%;
+  border-radius: 8px;
+  min-width: 2px;
+  transition: width 0.2s;
+}
+.type-bar-val {
+  font-size: 12.5px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
 /* ── 인쇄 / PNG 공통 레이아웃(B-1 클린 레저) ─────
    시각 스타일은 기본 클래스에 둔다(인쇄 + PNG 캡처가 함께 사용).
    @media print 는 페이지 나눔·표시 전환·치수 보정만 담당. */

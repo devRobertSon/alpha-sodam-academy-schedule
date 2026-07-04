@@ -141,6 +141,13 @@ body {
 .admin-toolbar button.ghost {
   color: var(--muted);
 }
+.admin-filter {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  align-items: center;
+  margin-bottom: 12px;
+}
 .admin-scroll {
   overflow-x: auto;
   border: 1px solid var(--line);
@@ -205,44 +212,6 @@ body {
   padding: 2px 7px;
 }
 
-.gyo-config {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 16px;
-  margin-top: 8px;
-}
-.gyo-config fieldset {
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  padding: 10px 14px;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-  align-items: flex-end;
-}
-.gyo-config legend {
-  font-weight: 600;
-  font-size: 13px;
-  padding: 0 6px;
-}
-.gyo-config label {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  font-size: 12px;
-  color: var(--muted);
-}
-.gyo-config input,
-.gyo-config select {
-  border: 1px solid var(--line);
-  border-radius: 6px;
-  padding: 6px 8px;
-  font-size: 13px;
-  background: #fff;
-}
-.gyo-config input[type='number'] {
-  width: 70px;
-}
 
 /* ── 입력 폼 ─────────────────────────────── */
 .input-form {

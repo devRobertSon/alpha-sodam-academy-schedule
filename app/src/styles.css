@@ -277,6 +277,106 @@ body {
   color: var(--muted);
 }
 
+/* ── 과목 선택 패널 ──────────────────────────── */
+.course-picker {
+  font-size: 13px;
+}
+.picker-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.picker-collapse {
+  border: none;
+  background: none;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 0;
+  color: var(--ink);
+}
+.picker-count {
+  color: var(--muted);
+  font-size: 12px;
+}
+.picker-filter {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin: 10px 0 8px;
+}
+.picker-tag {
+  padding: 4px 10px;
+  border: 1px solid var(--line);
+  background: #fff;
+  border-radius: 999px;
+  cursor: pointer;
+  font-size: 12px;
+}
+.picker-tag.active {
+  background: var(--ink);
+  color: #fff;
+  border-color: var(--ink);
+}
+.picker-actions {
+  margin-bottom: 8px;
+}
+.picker-list {
+  max-height: 260px;
+  overflow-y: auto;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 8px;
+}
+.picker-group {
+  margin-bottom: 8px;
+}
+.picker-group:last-child {
+  margin-bottom: 0;
+}
+.picker-group-title {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--muted);
+  margin-bottom: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.picker-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 6px;
+  border-radius: 6px;
+  cursor: grab;
+  user-select: none;
+  transition: background 0.1s;
+}
+.picker-item:hover {
+  background: var(--accent-soft);
+}
+.picker-item.included {
+  background: #eef6ee;
+}
+.picker-item input[type='checkbox'] {
+  margin: 0;
+  cursor: pointer;
+}
+.picker-swatch {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+.picker-name {
+  flex: 1;
+  font-size: 12px;
+}
+.picker-subject {
+  font-size: 11px;
+  color: var(--muted);
+}
+
 /* ── 로드맵 ───────────────────────────────── */
 .roadmap-scroll {
   overflow-x: auto;

@@ -44,15 +44,17 @@ export interface RoadmapEntry {
 /**
  * 목표 학교의 "남은 과목"(완료되지 않은 과정)을 시작 월 순으로 반환.
  * shifts: 과정 id별 학생 맞춤 이동(개월 수)
+ * includedIds: 지정 시 해당 id 과정만 포함(트랙 필터 대신)
  */
 export function remainingCourses(
   courses: Course[],
   track: Track,
   atIdx: number,
-  shifts: Record<string, number> = {}
+  shifts: Record<string, number> = {},
+  includedIds?: Set<string>
 ): RoadmapEntry[] {
   return courses
-    .filter((c) => c.track === track)
+    .filter((c) => includedIds ? includedIds.has(c.id) : c.track === track)
     .map((c) => {
       const shift = shifts[c.id] ?? 0;
       const { startIdx, endIdx } = shiftedRange(c, shift);
@@ -135,20 +137,26 @@ export interface MonthlyTimetable {
  *  - 모든 학생 공통('공통') 교과 과정
  * 한 과정이 주 N회면 세션마다 블록이 생긴다.
  * slotOverrides: 시간표에서 드래그로 바꾼 세션별 요일/시간(키 = courseId#sessionIdx)
+ * includedIds: 지정 시 해당 id 과정만 포함
  */
 export function buildMonthlyTimetable(
   courses: Course[],
   track: Track,
   viewIdx: number,
   shifts: Record<string, number>,
-  slotOverrides: Record<string, TimeSlot>
+  slotOverrides: Record<string, TimeSlot>,
+  includedIds?: Set<string>
 ): MonthlyTimetable {
   const blocks: TimetableBlock[] = [];
   for (const c of courses) {
-    if (c.track !== track && c.track !== '공통') continue;
+    if (includedIds) {
+      if (!includedIds.has(c.id)) continue;
+    } else {
+      if (c.track !== track && c.track !== '공통') continue;
+    }
     const shift = shifts[c.id] ?? 0;
     const { startIdx, endIdx } = shiftedRange(c, shift);
-    if (viewIdx < startIdx || viewIdx > endIdx) continue; // 이 달에 진행 안 함
+    if (viewIdx < startIdx || viewIdx > endIdx) continue;
     c.schedule.forEach((base, i) => {
       const key = sessionKey(c.id, i);
       const slot = slotOverrides[key] ?? base;

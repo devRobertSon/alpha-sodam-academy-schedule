@@ -221,7 +221,7 @@ export default function RemainingRoadmap({
     >
       {/* 좌상단 섹션명 */}
       <text x={8} y={16} fontSize={13} fontWeight={700} fill="#2C2C2A">
-        {track} · 남은 특화 과정
+        남은 과정
       </text>
 
       {/* 월 배경 틴트 */}

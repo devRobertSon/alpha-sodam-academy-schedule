@@ -102,8 +102,10 @@ export const TRACK_COURSES: Course[] = [
   { id: 'yj_hs_math_review', name: '고등수학 총정리', track: '영재학교', subject: '수학', type: '고등선행',
     start: { grade: '중3', month: 9 }, end: { grade: '중3', month: 11 }, schedule: [{ day: '토', start: '10:00', end: '13:00' }], teacher: '김민수' },
   // ── 영재학교 · 과학 ──
-  { id: 'yj_astro_genetics', name: '천체·유전 특강', track: '영재학교', subject: '과학', type: '영재학교입시',
-    start: { grade: '중2', month: 6 }, end: { grade: '중2', month: 11 }, schedule: [{ day: '수', start: '18:00', end: '20:00' }], teacher: '정우성' },
+  { id: 'yj_astro', name: '천체 특강', track: '영재학교', subject: '과학', type: '영재학교입시',
+    start: { grade: '중2', month: 6 }, end: { grade: '중2', month: 8 }, schedule: [{ day: '수', start: '18:00', end: '20:00' }], teacher: '정우성' },
+  { id: 'yj_genetics', name: '유전 특강', track: '영재학교', subject: '과학', type: '영재학교입시',
+    start: { grade: '중2', month: 9 }, end: { grade: '중2', month: 11 }, schedule: [{ day: '수', start: '18:00', end: '20:00' }], teacher: '정우성' },
   { id: 'yj_mid_adv_sci', name: '중등심화과학', track: '영재학교', subject: '과학', type: '영재학교입시',
     start: { grade: '중2', month: 12 }, end: { grade: '중2', month: 2 }, schedule: [{ day: '금', start: '18:00', end: '20:00' }], teacher: '한지민' },
   { id: 'yj_final_sci', name: '영재 파이널 과학', track: '영재학교', subject: '과학', type: '영재학교입시',

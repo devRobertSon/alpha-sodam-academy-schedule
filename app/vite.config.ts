@@ -6,7 +6,7 @@ import react from '@vitejs/plugin-react';
 // base: 레포명(GitHub Pages 프로젝트 페이지). 루트 레포면 '/'.
 export default defineConfig({
   plugins: [react()],
-  base: '/academy-schedule-generator/',
+  base: '/alpha-sodam-academy-schedule/',
   build: {
     outDir: '..',
     emptyOutDir: false, // 루트의 SPEC.md/README.md 등을 지우지 않도록

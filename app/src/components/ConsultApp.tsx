@@ -5,6 +5,7 @@ import MonthlyTimetable from './MonthlyTimetable';
 import AdminPage from './AdminPage';
 import ExportBar from './ExportBar';
 import PrintView from './PrintView';
+import Logo from './Logo';
 import { TimeSlot } from '../data/roadmap';
 import { nowIndex, remainingCourses } from '../lib/logic';
 import { StoreData, loadStore, saveStore } from '../lib/store';
@@ -49,6 +50,7 @@ export default function ConsultApp({ onHome }: { onHome: () => void }) {
         <div className="brand">
           <div className="brand-title">
             <button className="home-link" onClick={onHome}>← 홈</button>
+            <Logo size={26} />
             <h1>소담 알파학원 입시 상담 로드맵</h1>
           </div>
           <nav className="page-nav">

@@ -9,7 +9,7 @@ export default function HomePage({ onNavigate }: Props) {
     <div className="app home">
       <header className="home-header">
         <div className="home-logo">
-          <Logo size={64} />
+          <Logo size={104} />
         </div>
         <h1>소담 알파학원</h1>
         <p>원하는 작업을 선택하세요.</p>

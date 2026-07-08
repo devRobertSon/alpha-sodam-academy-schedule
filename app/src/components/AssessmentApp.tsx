@@ -45,7 +45,7 @@ export default function AssessmentApp({ onHome }: { onHome: () => void }) {
         <div className="brand">
           <div className="brand-title">
             <button className="home-link" onClick={onHome}>← 홈</button>
-            <Logo size={26} />
+            <Logo size={36} />
             <h1>학생 개별 평가</h1>
           </div>
           <div className="admin-toolbar" style={{ margin: 0 }}>

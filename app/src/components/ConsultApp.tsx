@@ -50,7 +50,7 @@ export default function ConsultApp({ onHome }: { onHome: () => void }) {
         <div className="brand">
           <div className="brand-title">
             <button className="home-link" onClick={onHome}>← 홈</button>
-            <Logo size={26} />
+            <Logo size={36} />
             <h1>소담 알파학원 입시 상담 로드맵</h1>
           </div>
           <nav className="page-nav">

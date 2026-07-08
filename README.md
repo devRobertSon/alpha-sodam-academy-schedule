@@ -2,7 +2,7 @@
 
 입시 **상담용 웹앱**입니다. 상담 온 학생의 정보를 입력하면, **목표 학교 합격까지 남은 과목**과 **월별 시간표**를 만들어 학부모님께 바로 전달(인쇄/PDF/이미지)할 수 있습니다.
 
-> 데모: `https://devrobertson.github.io/academy-schedule-generator/`
+> 데모: `https://devrobertson.github.io/alpha-sodam-academy-schedule/`
 
 ---
 
@@ -117,4 +117,4 @@ cd .. && git add -A && git commit -m "build" && git push
 
 > Vite/React 앱은 **빌드된 결과물만** 브라우저에서 동작합니다. 소스만 push하면 흰 화면이 되니, 반드시 위처럼 빌드 후 결과물을 커밋하세요.
 >
-> 레포명이 바뀌면 `app/vite.config.ts`의 `base`를 `/<레포명>/`로 맞춘 뒤 다시 빌드·커밋하세요. (현재 `/academy-schedule-generator/`)
+> 레포명이 바뀌면 `app/vite.config.ts`의 `base`를 `/<레포명>/`로 맞춘 뒤 다시 빌드·커밋하세요. (현재 `/alpha-sodam-academy-schedule/`)

@@ -13,9 +13,11 @@ export default defineConfig({
     rollupOptions: {
       output: {
         // 해시 없는 고정 파일명 → 매 빌드마다 덮어써 루트에 잔여 파일이 쌓이지 않게 함
+        // CSS 진입점은 index.css로 고정, 그 외 에셋(로고 등 이미지)은 원본 이름 유지
         entryFileNames: 'assets/index.js',
         chunkFileNames: 'assets/[name].js',
-        assetFileNames: 'assets/index.[ext]',
+        assetFileNames: (info) =>
+          info.name && /\.css$/i.test(info.name) ? 'assets/index.css' : 'assets/[name].[ext]',
       },
     },
   },

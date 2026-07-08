@@ -6,6 +6,7 @@ import {
   parseAssessmentJson,
   saveAssessment,
 } from '../lib/assessment';
+import Logo from './Logo';
 import StudentManager from './assessment/StudentManager';
 import ExamManager from './assessment/ExamManager';
 import GradingPanel from './assessment/GradingPanel';
@@ -44,6 +45,7 @@ export default function AssessmentApp({ onHome }: { onHome: () => void }) {
         <div className="brand">
           <div className="brand-title">
             <button className="home-link" onClick={onHome}>← 홈</button>
+            <Logo size={26} />
             <h1>학생 개별 평가</h1>
           </div>
           <div className="admin-toolbar" style={{ margin: 0 }}>

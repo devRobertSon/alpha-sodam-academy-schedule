@@ -1,7 +1,7 @@
 import Logo from './Logo';
 
 interface Props {
-  onNavigate: (view: 'consult' | 'assessment') => void;
+  onNavigate: (view: 'consult' | 'assessment' | 'manual') => void;
 }
 
 export default function HomePage({ onNavigate }: Props) {
@@ -28,6 +28,10 @@ export default function HomePage({ onNavigate }: Props) {
           <span className="home-card-desc">진단·주별 평가를 채점하고 유형별 리포트로 취약점 파악</span>
         </button>
       </div>
+
+      <button className="home-manual" onClick={() => onNavigate('manual')}>
+        📖 사용 설명서
+      </button>
     </div>
   );
 }

@@ -620,6 +620,58 @@ body {
   background: var(--accent-soft);
 }
 
+/* ── 클라우드 동기화 바 ───────────────────── */
+.cloud-bar {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  font-size: 13px;
+}
+.cloud-login {
+  padding: 6px 12px;
+  border: 1px solid var(--accent);
+  background: var(--accent);
+  color: #fff;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 13px;
+}
+.cloud-logout {
+  padding: 5px 10px;
+  border: 1px solid var(--line);
+  background: #fff;
+  color: var(--muted);
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 12.5px;
+}
+.cloud-email {
+  color: var(--muted);
+  max-width: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.cloud-status {
+  font-size: 12.5px;
+  color: var(--accent);
+  font-weight: 600;
+  white-space: nowrap;
+}
+.cloud-status.denied,
+.cloud-status.error {
+  color: #b3261e;
+}
+.cloud-status.syncing {
+  color: var(--muted);
+}
+.home-cloud {
+  display: flex;
+  justify-content: center;
+  margin-top: 14px;
+}
+
 /* ── 사용 설명서 ─────────────────────────── */
 .manual-card h2 {
   font-size: 17px;
@@ -665,6 +717,48 @@ body {
 .manual .app-footer {
   display: flex;
   justify-content: center;
+}
+
+/* 수학 유형 가이드 */
+.guide-principle {
+  background: var(--accent-soft);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 12px 14px;
+  font-size: 13.5px;
+  line-height: 1.65;
+  margin: 4px 0 14px;
+}
+.guide-type {
+  border-top: 1px solid var(--line);
+  padding-top: 12px;
+  margin-top: 12px;
+}
+.guide-type h3 {
+  margin: 0 0 6px;
+  font-size: 15px;
+  color: var(--accent);
+}
+.guide-def {
+  font-weight: 600;
+  margin: 0 0 6px;
+  font-size: 14px;
+}
+.guide-ex {
+  font-size: 13px;
+  color: var(--muted);
+  margin: 6px 0 0;
+}
+.guide-table-scroll {
+  overflow-x: auto;
+}
+.guide-table {
+  min-width: 640px;
+  font-variant-numeric: tabular-nums;
+}
+.guide-table tr.guide-total td {
+  font-weight: 700;
+  background: var(--accent-soft);
 }
 
 /* 홈 링크 / 브랜드 타이틀 */

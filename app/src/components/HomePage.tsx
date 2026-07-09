@@ -1,4 +1,5 @@
 import Logo from './Logo';
+import CloudBar from './CloudBar';
 
 interface Props {
   onNavigate: (view: 'consult' | 'assessment' | 'manual') => void;
@@ -32,6 +33,10 @@ export default function HomePage({ onNavigate }: Props) {
       <button className="home-manual" onClick={() => onNavigate('manual')}>
         📖 사용 설명서
       </button>
+
+      <div className="home-cloud">
+        <CloudBar />
+      </div>
     </div>
   );
 }

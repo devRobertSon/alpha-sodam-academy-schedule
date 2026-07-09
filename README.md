@@ -7,7 +7,7 @@
 
 > 데모: `https://devrobertson.github.io/alpha-sodam-academy-schedule/`
 
-브라우저에 자동 저장(localStorage)되며, 데이터는 JSON으로 백업·복원할 수 있습니다. 별도 서버·로그인은 없습니다.
+브라우저에 자동 저장(localStorage)되며, 데이터는 JSON으로 백업·복원할 수 있습니다. **구글 로그인 시 Firebase(Firestore)로 실시간 동기화**되어 여러 기기·선생님이 같은 데이터를 공유합니다(오프라인 지원, 로그인 안 하면 로컬 저장만).
 
 ---
 
@@ -105,6 +105,7 @@
 - 드래그앤드롭: `@dnd-kit/core`(시간표), 포인터 이벤트(로드맵 월 이동)
 - 차트/로드맵: 외부 라이브러리 없이 **SVG 직접 렌더**
 - 내보내기: `html-to-image`(PNG/JPEG) + `jszip`(ZIP) + `jspdf`(리포트 PDF, 동적 로드)
+- 클라우드 동기화: `firebase`(구글 로그인 + Firestore 실시간 동기화, 오프라인 캐시). 설정은 `src/lib/firebase.ts`, 접근 통제는 Firestore 보안 규칙(허용 이메일)
 - 테스트: Vitest
 
 ---

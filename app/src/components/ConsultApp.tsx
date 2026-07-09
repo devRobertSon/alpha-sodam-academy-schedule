@@ -6,9 +6,11 @@ import AdminPage from './AdminPage';
 import ExportBar from './ExportBar';
 import PrintView from './PrintView';
 import Logo from './Logo';
+import CloudBar from './CloudBar';
 import { TimeSlot } from '../data/roadmap';
 import { nowIndex, remainingCourses } from '../lib/logic';
-import { StoreData, loadStore, saveStore } from '../lib/store';
+import { loadStore, saveStore } from '../lib/store';
+import { useCloudDoc } from '../lib/cloud';
 
 type Page = 'consult' | 'admin';
 
@@ -20,11 +22,7 @@ const DEFAULT_CONSULT: ConsultInfo = {
 
 export default function ConsultApp({ onHome }: { onHome: () => void }) {
   const [page, setPage] = useState<Page>('consult');
-  const [store, setStoreState] = useState<StoreData>(() => loadStore());
-  const setStore = (next: StoreData) => {
-    setStoreState(next);
-    saveStore(next);
-  };
+  const { value: store, setValue: setStore, status: cloudStatus } = useCloudDoc('roadmap', loadStore, saveStore);
 
   const [info, setInfo] = useState<ConsultInfo>(DEFAULT_CONSULT);
   const [shifts, setShifts] = useState<Record<string, number>>({});
@@ -61,6 +59,7 @@ export default function ConsultApp({ onHome }: { onHome: () => void }) {
               관리
             </button>
           </nav>
+          <CloudBar status={cloudStatus} />
         </div>
         <p>
           {page === 'consult'

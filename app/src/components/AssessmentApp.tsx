@@ -1,13 +1,14 @@
 import { useMemo, useRef, useState } from 'react';
 import {
-  AssessmentData,
   exportAssessmentJson,
   listCourses,
   loadAssessment,
   parseAssessmentJson,
   saveAssessment,
 } from '../lib/assessment';
+import { useCloudDoc } from '../lib/cloud';
 import Logo from './Logo';
+import CloudBar from './CloudBar';
 import StudentManager from './assessment/StudentManager';
 import ExamManager from './assessment/ExamManager';
 import GradingPanel from './assessment/GradingPanel';
@@ -23,11 +24,7 @@ const TABS: { key: Tab; label: string }[] = [
 ];
 
 export default function AssessmentApp({ onHome }: { onHome: () => void }) {
-  const [data, setDataState] = useState<AssessmentData>(() => loadAssessment());
-  const setData = (next: AssessmentData) => {
-    setDataState(next);
-    saveAssessment(next);
-  };
+  const { value: data, setValue: setData, status: cloudStatus } = useCloudDoc('assessment', loadAssessment, saveAssessment);
   const [tab, setTab] = useState<Tab>('students');
   const fileRef = useRef<HTMLInputElement>(null);
   const courses = useMemo(() => listCourses(), []);
@@ -51,6 +48,7 @@ export default function AssessmentApp({ onHome }: { onHome: () => void }) {
             <h1>학생 개별 평가</h1>
           </div>
           <div className="admin-toolbar" style={{ margin: 0 }}>
+            <CloudBar status={cloudStatus} />
             <button onClick={() => exportAssessmentJson(data)}>JSON 내보내기</button>
             <button onClick={() => fileRef.current?.click()}>JSON 가져오기</button>
             <input

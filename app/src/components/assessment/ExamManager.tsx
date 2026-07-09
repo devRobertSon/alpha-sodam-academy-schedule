@@ -1,17 +1,21 @@
 import { Fragment, useRef, useState } from 'react';
 import {
   AssessmentData,
+  CourseOption,
+  DIAGNOSTIC_COURSE_ID,
   Exam,
   ExamKind,
   ExamQuestion,
   examQuestionsFromCsv,
   newId,
+  resolveCourseName,
   todayStr,
 } from '../../lib/assessment';
 
 interface Props {
   data: AssessmentData;
   setData: (d: AssessmentData) => void;
+  courses: CourseOption[];
 }
 
 interface Draft {
@@ -19,11 +23,12 @@ interface Draft {
   subject: string;
   kind: ExamKind;
   date: string;
+  courseId: string;
   questions: ExamQuestion[];
   errors: string[];
 }
 
-export default function ExamManager({ data, setData }: Props) {
+export default function ExamManager({ data, setData, courses }: Props) {
   const fileRef = useRef<HTMLInputElement>(null);
   const [draft, setDraft] = useState<Draft | null>(null);
   const [openId, setOpenId] = useState<string | null>(null);
@@ -36,11 +41,13 @@ export default function ExamManager({ data, setData }: Props) {
       return;
     }
     const base = file.name.replace(/\.csv$/i, '');
+    const kind: ExamKind = /주별|주간|weekly/i.test(base) ? '주별' : '진단';
     setDraft({
       title: res.title || base,
       subject: res.subject || '과학',
-      kind: /주별|주간|weekly/i.test(base) ? '주별' : '진단',
+      kind,
       date: todayStr(),
+      courseId: kind === '진단' ? DIAGNOSTIC_COURSE_ID : '',
       questions: res.questions,
       errors: res.errors,
     });
@@ -48,12 +55,17 @@ export default function ExamManager({ data, setData }: Props) {
 
   const saveDraft = () => {
     if (!draft) return;
+    if (!draft.courseId) {
+      alert('이 시험지가 어느 수업의 것인지 [수업]을 선택하세요.');
+      return;
+    }
     const exam: Exam = {
       id: newId('exam'),
       title: draft.title.trim() || '제목 없음',
       subject: draft.subject.trim() || '과학',
       kind: draft.kind,
       date: draft.date,
+      courseId: draft.courseId,
       questions: draft.questions,
     };
     setData({ ...data, exams: [...data.exams, exam] });
@@ -111,6 +123,15 @@ export default function ExamManager({ data, setData }: Props) {
               </select>
             </label>
             <label className="assess-field">
+              수업
+              <select value={draft.courseId} onChange={(e) => setDraft({ ...draft, courseId: e.target.value })}>
+                <option value="">선택</option>
+                {courses.map((c) => (
+                  <option key={c.id} value={c.id}>{c.name}</option>
+                ))}
+              </select>
+            </label>
+            <label className="assess-field">
               날짜
               <input type="date" value={draft.date} onChange={(e) => setDraft({ ...draft, date: e.target.value })} />
             </label>
@@ -139,6 +160,7 @@ export default function ExamManager({ data, setData }: Props) {
           <thead>
             <tr>
               <th>시험지</th>
+              <th>수업</th>
               <th>종류</th>
               <th>과목</th>
               <th>날짜</th>
@@ -152,6 +174,7 @@ export default function ExamManager({ data, setData }: Props) {
               <Fragment key={ex.id}>
                 <tr>
                   <td>{ex.title}</td>
+                  <td>{resolveCourseName(courses, ex.courseId)}</td>
                   <td>{ex.kind}평가</td>
                   <td>{ex.subject}</td>
                   <td>{ex.date}</td>
@@ -167,7 +190,7 @@ export default function ExamManager({ data, setData }: Props) {
                 </tr>
                 {openId === ex.id && (
                   <tr>
-                    <td colSpan={7}>
+                    <td colSpan={8}>
                       <div className="assess-preview-grid">
                         {ex.questions.map((q) => (
                           <span key={q.no} className="assess-chip">

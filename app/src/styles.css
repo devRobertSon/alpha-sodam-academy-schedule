@@ -850,6 +850,39 @@ body {
   margin-right: 3px;
 }
 
+/* 학생 수업(class) 선택 */
+.course-picker-row {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 4px 2px 8px;
+}
+.course-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.course-chip {
+  padding: 5px 11px;
+  border: 1px solid var(--line);
+  background: #fff;
+  border-radius: 999px;
+  cursor: pointer;
+  font-size: 12.5px;
+  color: var(--ink);
+}
+.course-chip:hover {
+  border-color: var(--accent);
+}
+.course-chip.on {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+.course-selected {
+  font-size: 12px;
+}
+
 /* O/X 채점 그리드 */
 .ox-grid {
   display: grid;
@@ -960,6 +993,82 @@ body {
   font-size: 12.5px;
   text-align: right;
   font-variant-numeric: tabular-nums;
+}
+
+/* 리포트 — 시험 선택 + PDF 캡처 */
+.report-pick-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+.report-pick-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.report-range {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin: 4px 0 12px;
+  font-size: 13px;
+}
+.report-range-label {
+  font-weight: 600;
+  color: var(--ink);
+}
+.report-range input[type='date'] {
+  padding: 6px 8px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  font-size: 13px;
+  background: #fff;
+}
+.report-exam-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.report-exam-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 13px;
+}
+.report-exam-item.on {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+.report-exam-name {
+  font-weight: 600;
+}
+.report-capture {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  background: #fff;
+  padding: 4px;
+}
+.report-cap-head {
+  padding: 4px 2px;
+}
+.report-cap-title {
+  font-size: 17px;
+  font-weight: 750;
+  color: var(--ink);
+}
+.report-cap-sub {
+  font-size: 12.5px;
+  color: var(--muted);
+  margin-top: 2px;
 }
 
 /* 유형별 정답률 레이더 차트 */

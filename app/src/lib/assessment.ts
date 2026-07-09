@@ -1,7 +1,30 @@
 // src/lib/assessment.ts — 학생 개별 평가 데이터(학생·시험지·채점) + CSV 임포트 + 집계
 // 저장: localStorage 단일 키 + JSON 백업
+import { loadStore } from './store';
 
 export type ExamKind = '진단' | '주별';
+
+// 수업(class) — 입시 상담 로드맵의 과정 목록 + 진단테스트 특수 수업
+export interface CourseOption {
+  id: string;
+  name: string;
+}
+export const DIAGNOSTIC_COURSE_ID = 'diagnostic';
+
+export function listCourses(): CourseOption[] {
+  let roadmap: CourseOption[] = [];
+  try {
+    roadmap = loadStore().courses.map((c) => ({ id: c.id, name: c.name }));
+  } catch {
+    roadmap = [];
+  }
+  return [{ id: DIAGNOSTIC_COURSE_ID, name: '진단테스트' }, ...roadmap];
+}
+
+export function resolveCourseName(courses: CourseOption[], id?: string): string {
+  if (!id) return '(수업 미지정)';
+  return courses.find((c) => c.id === id)?.name ?? '(삭제된 수업)';
+}
 
 export interface ExamQuestion {
   no: number;
@@ -16,6 +39,7 @@ export interface Exam {
   subject: string;
   kind: ExamKind;
   date: string; // YYYY-MM-DD
+  courseId?: string; // 어느 수업의 시험지인지
   questions: ExamQuestion[];
 }
 
@@ -24,6 +48,7 @@ export interface Student {
   name: string;
   grade: string;
   memo?: string;
+  courseIds?: string[]; // 학생이 듣는 수업들
 }
 
 export interface Mark {
@@ -210,6 +235,153 @@ export function examQuestionsFromCsv(text: string): CsvParseResult {
 
   questions.sort((a, b) => a.no - b.no);
   return { questions, title, subject, errors };
+}
+
+// ── 파일 다운로드 ────────────────────────────────────────
+export function downloadText(filename: string, text: string, mime = 'text/csv;charset=utf-8'): void {
+  const blob = new Blob([text], { type: mime });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function findCol(header: string[], aliases: string[]): number {
+  const low = header.map((h) => h.trim().toLowerCase());
+  for (const a of aliases) {
+    const i = low.indexOf(a.toLowerCase());
+    if (i >= 0) return i;
+  }
+  return -1;
+}
+
+function csvEscape(v: string): string {
+  return /[",\n\r]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v;
+}
+
+// ── 학생 목록 CSV ────────────────────────────────────────
+export function studentsToCsv(students: Student[], courses: CourseOption[]): string {
+  const nameOf = (id: string) => courses.find((c) => c.id === id)?.name ?? '';
+  const lines = ['이름,학년,듣는수업'];
+  for (const s of students) {
+    const classes = (s.courseIds ?? []).map(nameOf).filter(Boolean).join(';');
+    lines.push([csvEscape(s.name), csvEscape(s.grade), csvEscape(classes)].join(','));
+  }
+  return '﻿' + lines.join('\r\n');
+}
+
+export interface StudentDraft {
+  name: string;
+  grade: string;
+  courseIds: string[];
+}
+
+export function parseStudentsCsv(
+  text: string,
+  courses: CourseOption[]
+): { drafts: StudentDraft[]; errors: string[] } {
+  const rows = parseCsv(text);
+  const errors: string[] = [];
+  if (rows.length < 2) return { drafts: [], errors: ['CSV에 데이터 행이 없습니다.'] };
+  const header = rows[0];
+  const idxName = findCol(header, ['이름', '학생', '학생이름', 'name']);
+  const idxGrade = findCol(header, ['학년', 'grade']);
+  const idxClasses = findCol(header, ['듣는수업', '수업', '수강', 'classes', 'courses']);
+  if (idxName === -1) {
+    errors.push('이름 열을 찾지 못했습니다. (헤더에 "이름" 필요)');
+    return { drafts: [], errors };
+  }
+  const idByName = new Map(courses.map((c) => [c.name.trim(), c.id]));
+  const drafts: StudentDraft[] = [];
+  for (let r = 1; r < rows.length; r++) {
+    const cells = rows[r];
+    const name = (cells[idxName] ?? '').trim();
+    if (!name) continue;
+    const grade = (idxGrade >= 0 ? (cells[idxGrade] ?? '').trim() : '') || '중1';
+    const raw = idxClasses >= 0 ? cells[idxClasses] ?? '' : '';
+    const names = raw.split(/[;,]/).map((x) => x.trim()).filter(Boolean);
+    const courseIds: string[] = [];
+    const unknown: string[] = [];
+    for (const nm of names) {
+      const id = idByName.get(nm);
+      if (id) courseIds.push(id);
+      else unknown.push(nm);
+    }
+    if (unknown.length) errors.push(`${name}: 알 수 없는 수업 → ${unknown.join(', ')}`);
+    drafts.push({ name, grade, courseIds });
+  }
+  return { drafts, errors };
+}
+
+// 이름 기준 업서트(있으면 갱신, 없으면 추가) — 채점 결과 보존
+export function upsertStudents(
+  data: AssessmentData,
+  drafts: StudentDraft[]
+): { data: AssessmentData; added: number; updated: number } {
+  const students = [...data.students];
+  let added = 0;
+  let updated = 0;
+  for (const d of drafts) {
+    const idx = students.findIndex((s) => s.name === d.name);
+    if (idx >= 0) {
+      students[idx] = { ...students[idx], grade: d.grade, courseIds: d.courseIds };
+      updated += 1;
+    } else {
+      students.push({ id: newId('stu'), name: d.name, grade: d.grade, courseIds: d.courseIds });
+      added += 1;
+    }
+  }
+  return { data: { ...data, students }, added, updated };
+}
+
+// ── 채점(O/X) CSV ────────────────────────────────────────
+export function resultToCsv(
+  studentName: string,
+  courseName: string,
+  examTitle: string,
+  date: string,
+  questions: ExamQuestion[],
+  marks: Mark[]
+): string {
+  const byNo = new Map(marks.map((m) => [m.no, m.correct]));
+  const lines = ['학생,수업,시험지,응시일,문항번호,OX'];
+  for (const q of questions) {
+    const v = byNo.get(q.no);
+    const ox = v === undefined ? '' : v ? 'O' : 'X';
+    lines.push(
+      [csvEscape(studentName), csvEscape(courseName), csvEscape(examTitle), csvEscape(date), String(q.no), ox].join(',')
+    );
+  }
+  return '﻿' + lines.join('\r\n');
+}
+
+export function parseGradingCsv(text: string): { date?: string; ox: Record<number, boolean>; errors: string[] } {
+  const rows = parseCsv(text);
+  const errors: string[] = [];
+  if (rows.length < 2) return { ox: {}, errors: ['CSV에 데이터 행이 없습니다.'] };
+  const header = rows[0];
+  const idxNo = findCol(header, ['문항번호', '번호', '문항', '문제번호', 'no']);
+  const idxOx = findCol(header, ['ox', 'o/x', '정답여부', '채점', 'result', '맞음']);
+  const idxDate = findCol(header, ['응시일', '날짜', 'date']);
+  if (idxNo === -1 || idxOx === -1) {
+    errors.push('문항번호·OX 열을 찾지 못했습니다.');
+    return { ox: {}, errors };
+  }
+  const ox: Record<number, boolean> = {};
+  let date: string | undefined;
+  for (let r = 1; r < rows.length; r++) {
+    const cells = rows[r];
+    const no = Number((cells[idxNo] ?? '').replace(/[^0-9]/g, ''));
+    if (!no) continue;
+    if (idxDate >= 0 && !date && (cells[idxDate] ?? '').trim()) date = cells[idxDate].trim();
+    const val = (cells[idxOx] ?? '').trim().toUpperCase();
+    if (['O', '1', '맞음', '정답', 'TRUE', '○'].includes(val)) ox[no] = true;
+    else if (['X', '0', '틀림', '오답', 'FALSE', '×'].includes(val)) ox[no] = false;
+    // 그 외(빈칸 등)는 미입력으로 둔다
+  }
+  return { date, ox, errors };
 }
 
 // ── 집계 ─────────────────────────────────────────────────

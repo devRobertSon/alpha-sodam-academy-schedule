@@ -667,6 +667,48 @@ body {
   justify-content: center;
 }
 
+/* 수학 유형 가이드 */
+.guide-principle {
+  background: var(--accent-soft);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 12px 14px;
+  font-size: 13.5px;
+  line-height: 1.65;
+  margin: 4px 0 14px;
+}
+.guide-type {
+  border-top: 1px solid var(--line);
+  padding-top: 12px;
+  margin-top: 12px;
+}
+.guide-type h3 {
+  margin: 0 0 6px;
+  font-size: 15px;
+  color: var(--accent);
+}
+.guide-def {
+  font-weight: 600;
+  margin: 0 0 6px;
+  font-size: 14px;
+}
+.guide-ex {
+  font-size: 13px;
+  color: var(--muted);
+  margin: 6px 0 0;
+}
+.guide-table-scroll {
+  overflow-x: auto;
+}
+.guide-table {
+  min-width: 640px;
+  font-variant-numeric: tabular-nums;
+}
+.guide-table tr.guide-total td {
+  font-weight: 700;
+  background: var(--accent-soft);
+}
+
 /* 홈 링크 / 브랜드 타이틀 */
 .brand-title {
   display: flex;

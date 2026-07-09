@@ -66,7 +66,7 @@ export default function AssessmentApp({ onHome }: { onHome: () => void }) {
             />
           </div>
         </div>
-        <p>진단·주별 평가를 학생별로 채점하고 유형별 리포트를 확인합니다. (브라우저 자동 저장 · JSON 백업)</p>
+        <p>진단·단원 평가를 학생별로 채점하고 유형별 리포트를 확인합니다. (브라우저 자동 저장 · JSON 백업)</p>
       </header>
 
       <nav className="assess-tabs">

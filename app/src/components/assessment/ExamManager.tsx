@@ -40,7 +40,7 @@ export default function ExamManager({ data, setData, courses }: Props) {
     const res = examQuestionsFromCsv(text);
     if (res.questions.length === 0) return null;
     const base = file.name.replace(/\.csv$/i, '');
-    const kind: ExamKind = /주별|주간|weekly/i.test(base) ? '주별' : '진단';
+    const kind: ExamKind = /단원|주별|주간|unit|weekly/i.test(base) ? '단원' : '진단';
     // CSV에 수업 이름이 있으면 그 수업으로 자동 지정, 없으면 진단→진단테스트 기본
     let courseId = kind === '진단' ? DIAGNOSTIC_COURSE_ID : '';
     if (res.course) {
@@ -185,7 +185,7 @@ export default function ExamManager({ data, setData, courses }: Props) {
                     종류
                     <select value={d.kind} onChange={(e) => updateDraft(d.key, { kind: e.target.value as ExamKind })}>
                       <option value="진단">진단평가</option>
-                      <option value="주별">주별평가</option>
+                      <option value="단원">단원평가</option>
                     </select>
                   </label>
                   <label className="assess-field">

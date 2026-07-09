@@ -122,6 +122,8 @@ function TypeRadar({ stats }: { stats: TypeStat[] }) {
 export default function TypeReport({ data }: Props) {
   const [studentId, setStudentId] = useState('');
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [fromDate, setFromDate] = useState('');
+  const [toDate, setToDate] = useState('');
   const [busy, setBusy] = useState(false);
   const captureRef = useRef<HTMLDivElement>(null);
 
@@ -133,10 +135,20 @@ export default function TypeReport({ data }: Props) {
     [data.results, studentId]
   );
 
-  // 학생이 바뀌면 그 학생의 모든 응시를 기본 선택
+  // 학생이 바뀌면 기간 초기화 + 그 학생의 모든 응시를 기본 선택
   useEffect(() => {
+    setFromDate('');
+    setToDate('');
     setSelectedIds(new Set(studentResults.map((r) => r.id)));
   }, [studentId, studentResults.length]);
+
+  // 기간을 정하면 그 기간에 응시한 시험을 선택(날짜 문자열 YYYY-MM-DD 사전순 비교)
+  const applyRange = (from: string, to: string) => {
+    setFromDate(from);
+    setToDate(to);
+    const inRange = studentResults.filter((r) => (!from || r.date >= from) && (!to || r.date <= to));
+    setSelectedIds(new Set(inRange.map((r) => r.id)));
+  };
 
   const selectedResults = useMemo(
     () => studentResults.filter((r) => selectedIds.has(r.id)),
@@ -155,8 +167,12 @@ export default function TypeReport({ data }: Props) {
       else next.add(id);
       return next;
     });
-  const selectAll = () => setSelectedIds(new Set(studentResults.map((r) => r.id)));
-  const clearAll = () => setSelectedIds(new Set());
+  const selectAll = () => applyRange('', '');
+  const clearAll = () => {
+    setFromDate('');
+    setToDate('');
+    setSelectedIds(new Set());
+  };
 
   const today = todayStr();
 
@@ -225,6 +241,13 @@ export default function TypeReport({ data }: Props) {
                 <span className="muted">{selectedResults.length}/{studentResults.length}개 선택</span>
               </span>
             </div>
+            <div className="report-range">
+              <span className="report-range-label">기간으로 선택</span>
+              <input type="date" value={fromDate} max={toDate || undefined} onChange={(e) => applyRange(e.target.value, toDate)} />
+              <span>~</span>
+              <input type="date" value={toDate} min={fromDate || undefined} onChange={(e) => applyRange(fromDate, e.target.value)} />
+              <span className="muted">기간을 정하면 그 기간에 응시한 시험이 선택됩니다. (개별 체크로 조정 가능)</span>
+            </div>
             <div className="report-exam-list">
               {studentResults.map((r) => {
                 const ex = examById.get(r.examId);
@@ -247,7 +270,9 @@ export default function TypeReport({ data }: Props) {
               <div className="report-cap-head">
                 <div className="report-cap-title">{student?.name} 학생 · 유형별 평가 리포트</div>
                 <div className="report-cap-sub">
-                  {student?.grade} · 생성일 {today} · 대상 시험 {selectedResults.length}개
+                  {student?.grade} · 생성일 {today}
+                  {(fromDate || toDate) && ` · 기간 ${fromDate || '처음'} ~ ${toDate || '끝'}`}
+                  {' · '}대상 시험 {selectedResults.length}개
                 </div>
               </div>
 

@@ -1009,6 +1009,25 @@ body {
   align-items: center;
   gap: 6px;
 }
+.report-range {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin: 4px 0 12px;
+  font-size: 13px;
+}
+.report-range-label {
+  font-weight: 600;
+  color: var(--ink);
+}
+.report-range input[type='date'] {
+  padding: 6px 8px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  font-size: 13px;
+  background: #fff;
+}
 .report-exam-list {
   display: flex;
   flex-direction: column;

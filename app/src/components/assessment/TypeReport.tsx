@@ -1,11 +1,6 @@
-import { useMemo, useState } from 'react';
-import {
-  AssessmentData,
-  TypeStat,
-  scoreOf,
-  typeStatsCumulative,
-  typeStatsForResult,
-} from '../../lib/assessment';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { toJpeg } from 'html-to-image';
+import { AssessmentData, TypeStat, scoreOf, todayStr, typeStatsCumulative } from '../../lib/assessment';
 
 interface Props {
   data: AssessmentData;
@@ -126,49 +121,92 @@ function TypeRadar({ stats }: { stats: TypeStat[] }) {
 
 export default function TypeReport({ data }: Props) {
   const [studentId, setStudentId] = useState('');
-  const [scope, setScope] = useState<string>('all'); // 'all' 또는 resultId
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [busy, setBusy] = useState(false);
+  const captureRef = useRef<HTMLDivElement>(null);
+
+  const student = data.students.find((s) => s.id === studentId);
+  const examById = useMemo(() => new Map(data.exams.map((e) => [e.id, e])), [data.exams]);
 
   const studentResults = useMemo(
     () => data.results.filter((r) => r.studentId === studentId).sort((a, b) => a.date.localeCompare(b.date)),
     [data.results, studentId]
   );
 
-  const examById = useMemo(() => new Map(data.exams.map((e) => [e.id, e])), [data.exams]);
+  // 학생이 바뀌면 그 학생의 모든 응시를 기본 선택
+  useEffect(() => {
+    setSelectedIds(new Set(studentResults.map((r) => r.id)));
+  }, [studentId, studentResults.length]);
 
-  const stats: TypeStat[] = useMemo(() => {
-    if (!studentId) return [];
-    if (scope === 'all') return typeStatsCumulative(data.exams, studentResults);
-    const res = studentResults.find((r) => r.id === scope);
-    const exam = res && examById.get(res.examId);
-    if (!res || !exam) return [];
-    return typeStatsForResult(exam, res.marks);
-  }, [studentId, scope, data.exams, studentResults, examById]);
+  const selectedResults = useMemo(
+    () => studentResults.filter((r) => selectedIds.has(r.id)),
+    [studentResults, selectedIds]
+  );
+
+  const stats: TypeStat[] = useMemo(
+    () => (studentId ? typeStatsCumulative(data.exams, selectedResults) : []),
+    [studentId, data.exams, selectedResults]
+  );
+
+  const toggle = (id: string) =>
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  const selectAll = () => setSelectedIds(new Set(studentResults.map((r) => r.id)));
+  const clearAll = () => setSelectedIds(new Set());
+
+  const today = todayStr();
+
+  const downloadPdf = async () => {
+    if (!captureRef.current || !student) return;
+    setBusy(true);
+    try {
+      const { jsPDF } = await import('jspdf');
+      const dataUrl = await toJpeg(captureRef.current, { backgroundColor: '#ffffff', quality: 0.92, pixelRatio: 2, cacheBust: true });
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const pageW = pdf.internal.pageSize.getWidth();
+      const pageH = pdf.internal.pageSize.getHeight();
+      const props = pdf.getImageProperties(dataUrl);
+      const imgW = pageW;
+      const imgH = (props.height * imgW) / props.width;
+      let heightLeft = imgH;
+      let position = 0;
+      pdf.addImage(dataUrl, 'JPEG', 0, position, imgW, imgH);
+      heightLeft -= pageH;
+      while (heightLeft > 0) {
+        position -= pageH;
+        pdf.addPage();
+        pdf.addImage(dataUrl, 'JPEG', 0, position, imgW, imgH);
+        heightLeft -= pageH;
+      }
+      pdf.save(`리포트_${student.name}_${today}.pdf`);
+    } catch (e) {
+      console.error(e);
+      alert('PDF 저장에 실패했습니다. 다시 시도해 주세요.');
+    } finally {
+      setBusy(false);
+    }
+  };
 
   return (
     <div className="assess-pane">
       <div className="assess-row wrap">
         <label className="assess-field">
           학생
-          <select value={studentId} onChange={(e) => { setStudentId(e.target.value); setScope('all'); }}>
+          <select value={studentId} onChange={(e) => setStudentId(e.target.value)}>
             <option value="">선택</option>
             {data.students.map((s) => (
               <option key={s.id} value={s.id}>{s.name} ({s.grade})</option>
             ))}
           </select>
         </label>
-        {studentId && (
-          <label className="assess-field">
-            범위
-            <select value={scope} onChange={(e) => setScope(e.target.value)}>
-              <option value="all">전체 누적 ({studentResults.length}개 시험)</option>
-              {studentResults.map((r) => {
-                const ex = examById.get(r.examId);
-                return (
-                  <option key={r.id} value={r.id}>{ex?.title ?? '시험'} · {r.date}</option>
-                );
-              })}
-            </select>
-          </label>
+        {studentId && studentResults.length > 0 && (
+          <button className="primary" onClick={downloadPdf} disabled={busy || selectedResults.length === 0}>
+            {busy ? '저장 중…' : '📄 리포트 PDF 저장'}
+          </button>
         )}
       </div>
 
@@ -179,37 +217,74 @@ export default function TypeReport({ data }: Props) {
       ) : (
         <>
           <div className="assess-card">
-            <h3>유형별 정답률</h3>
-            <TypeBars stats={stats} />
-            {stats.length > 0 && (
-              <div className="type-radar-wrap">
-                <TypeRadar stats={stats} />
-              </div>
-            )}
+            <div className="report-pick-head">
+              <b>리포트에 포함할 시험</b>
+              <span className="report-pick-actions">
+                <button className="mini" onClick={selectAll}>전체 선택</button>
+                <button className="mini ghost" onClick={clearAll}>전체 해제</button>
+                <span className="muted">{selectedResults.length}/{studentResults.length}개 선택</span>
+              </span>
+            </div>
+            <div className="report-exam-list">
+              {studentResults.map((r) => {
+                const ex = examById.get(r.examId);
+                const sc = scoreOf(r.marks);
+                return (
+                  <label key={r.id} className={`report-exam-item ${selectedIds.has(r.id) ? 'on' : ''}`}>
+                    <input type="checkbox" checked={selectedIds.has(r.id)} onChange={() => toggle(r.id)} />
+                    <span className="report-exam-name">{ex?.title ?? '시험'}</span>
+                    <span className="muted">{ex?.kind ?? ''}평가 · {r.date} · {sc.correct}/{sc.total} ({Math.round(sc.rate * 100)}%)</span>
+                  </label>
+                );
+              })}
+            </div>
           </div>
 
-          <div className="assess-card">
-            <h3>응시 이력</h3>
-            <table className="assess-table">
-              <thead>
-                <tr><th>시험지</th><th>종류</th><th>응시일</th><th>정답률</th></tr>
-              </thead>
-              <tbody>
-                {studentResults.map((r) => {
-                  const ex = examById.get(r.examId);
-                  const sc = scoreOf(r.marks);
-                  return (
-                    <tr key={r.id}>
-                      <td>{ex?.title ?? '—'}</td>
-                      <td>{ex?.kind ?? ''}평가</td>
-                      <td>{r.date}</td>
-                      <td>{sc.correct}/{sc.total} · {Math.round(sc.rate * 100)}%</td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
+          {selectedResults.length === 0 ? (
+            <p className="muted">시험을 하나 이상 선택하세요.</p>
+          ) : (
+            <div ref={captureRef} className="report-capture">
+              <div className="report-cap-head">
+                <div className="report-cap-title">{student?.name} 학생 · 유형별 평가 리포트</div>
+                <div className="report-cap-sub">
+                  {student?.grade} · 생성일 {today} · 대상 시험 {selectedResults.length}개
+                </div>
+              </div>
+
+              <div className="assess-card">
+                <h3>유형별 정답률</h3>
+                <TypeBars stats={stats} />
+                {stats.length > 0 && (
+                  <div className="type-radar-wrap">
+                    <TypeRadar stats={stats} />
+                  </div>
+                )}
+              </div>
+
+              <div className="assess-card">
+                <h3>응시 이력 (선택한 시험)</h3>
+                <table className="assess-table">
+                  <thead>
+                    <tr><th>시험지</th><th>종류</th><th>응시일</th><th>정답률</th></tr>
+                  </thead>
+                  <tbody>
+                    {selectedResults.map((r) => {
+                      const ex = examById.get(r.examId);
+                      const sc = scoreOf(r.marks);
+                      return (
+                        <tr key={r.id}>
+                          <td>{ex?.title ?? '—'}</td>
+                          <td>{ex?.kind ?? ''}평가</td>
+                          <td>{r.date}</td>
+                          <td>{sc.correct}/{sc.total} · {Math.round(sc.rate * 100)}%</td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
         </>
       )}
     </div>

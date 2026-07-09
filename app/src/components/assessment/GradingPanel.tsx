@@ -1,5 +1,17 @@
-import { useEffect, useMemo, useState } from 'react';
-import { AssessmentData, CourseOption, Mark, Result, newId, scoreOf, todayStr } from '../../lib/assessment';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import {
+  AssessmentData,
+  CourseOption,
+  Mark,
+  Result,
+  downloadText,
+  newId,
+  parseGradingCsv,
+  resolveCourseName,
+  resultToCsv,
+  scoreOf,
+  todayStr,
+} from '../../lib/assessment';
 
 interface Props {
   data: AssessmentData;
@@ -15,8 +27,10 @@ export default function GradingPanel({ data, setData, courses }: Props) {
   const [examId, setExamId] = useState('');
   const [cells, setCells] = useState<Record<number, Cell>>({});
   const [date, setDate] = useState(todayStr());
+  const csvRef = useRef<HTMLInputElement>(null);
 
   const exam = data.exams.find((e) => e.id === examId);
+  const student = data.students.find((s) => s.id === studentId);
 
   // 선택한 수업의 시험지·학생만
   const examOptions = useMemo(
@@ -89,6 +103,28 @@ export default function GradingPanel({ data, setData, courses }: Props) {
     alert('채점을 저장했습니다.');
   };
 
+  const exportGradingCsv = () => {
+    if (!exam || !student) {
+      alert('수업·학생·시험지를 선택하세요.');
+      return;
+    }
+    const csv = resultToCsv(student.name, resolveCourseName(courses, courseId), exam.title, date, exam.questions, marks);
+    downloadText(`채점_${student.name}_${exam.title}_${date}.csv`, csv);
+  };
+
+  const importGradingCsv = async (file: File) => {
+    if (!exam) {
+      alert('먼저 수업·학생·시험지를 선택하세요.');
+      return;
+    }
+    const { date: d, ox, errors } = parseGradingCsv(await file.text());
+    const map: Record<number, Cell> = {};
+    exam.questions.forEach((q) => (map[q.no] = q.no in ox ? ox[q.no] : null));
+    setCells(map);
+    if (d) setDate(d);
+    alert('채점표를 불러왔습니다. 확인 후 [채점 저장]을 누르세요.' + (errors.length ? '\n\n주의:\n' + errors.join('\n') : ''));
+  };
+
   const canGrade = data.students.length > 0 && data.exams.length > 0;
 
   return (
@@ -146,6 +182,20 @@ export default function GradingPanel({ data, setData, courses }: Props) {
                 <button className="mini" onClick={() => setAll(false)}>전체 X</button>
                 <button className="mini ghost" onClick={() => setAll(null)}>초기화</button>
                 {existing && <span className="assess-badge">저장된 채점 불러옴</span>}
+                <span style={{ marginLeft: 'auto' }} />
+                <button className="mini" onClick={exportGradingCsv}>채점 CSV 내려받기</button>
+                <button className="mini" onClick={() => csvRef.current?.click()}>채점 CSV 올리기</button>
+                <input
+                  ref={csvRef}
+                  type="file"
+                  accept=".csv,text/csv"
+                  style={{ display: 'none' }}
+                  onChange={(e) => {
+                    const f = e.target.files?.[0];
+                    if (f) importGradingCsv(f);
+                    e.target.value = '';
+                  }}
+                />
               </div>
 
               <div className="ox-grid">

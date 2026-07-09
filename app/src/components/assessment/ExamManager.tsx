@@ -42,12 +42,22 @@ export default function ExamManager({ data, setData, courses }: Props) {
     }
     const base = file.name.replace(/\.csv$/i, '');
     const kind: ExamKind = /주별|주간|weekly/i.test(base) ? '주별' : '진단';
+    // CSV에 수업 이름이 있으면 그 수업으로 자동 지정, 없으면 진단→진단테스트 기본
+    let courseId = kind === '진단' ? DIAGNOSTIC_COURSE_ID : '';
+    if (res.course) {
+      const wanted = res.course.trim();
+      const match =
+        courses.find((c) => c.name.trim() === wanted) ??
+        (/^진단(\s*테스트)?$/.test(wanted) ? courses.find((c) => c.id === DIAGNOSTIC_COURSE_ID) : undefined);
+      if (match) courseId = match.id;
+      else res.errors.push(`CSV의 수업 "${wanted}"을(를) 찾지 못해 수업을 직접 선택해야 합니다.`);
+    }
     setDraft({
       title: res.title || base,
       subject: res.subject || '과학',
       kind,
       date: todayStr(),
-      courseId: kind === '진단' ? DIAGNOSTIC_COURSE_ID : '',
+      courseId,
       questions: res.questions,
       errors: res.errors,
     });
@@ -100,7 +110,7 @@ export default function ExamManager({ data, setData, courses }: Props) {
             e.target.value = '';
           }}
         />
-        <span className="hint">CSV 열: 문항번호·유형(필수), 과목·정답·배점·시험지(선택)</span>
+        <span className="hint">CSV 열: 문항번호·유형(필수), 과목·정답·배점·시험지·수업(선택). 수업이 있으면 자동 지정됩니다.</span>
       </div>
 
       {draft && (

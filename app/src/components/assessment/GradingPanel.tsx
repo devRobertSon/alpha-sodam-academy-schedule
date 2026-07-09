@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   AssessmentData,
   CourseOption,
+  DIAGNOSTIC_COURSE_ID,
   Mark,
   Result,
   downloadText,
@@ -22,8 +23,8 @@ interface Props {
 type Cell = boolean | null; // true=O(맞음), false=X(틀림), null=미입력
 
 export default function GradingPanel({ data, setData, courses }: Props) {
-  const [courseId, setCourseId] = useState('');
   const [studentId, setStudentId] = useState('');
+  const [courseId, setCourseId] = useState('');
   const [examId, setExamId] = useState('');
   const [cells, setCells] = useState<Record<number, Cell>>({});
   const [date, setDate] = useState(todayStr());
@@ -32,26 +33,33 @@ export default function GradingPanel({ data, setData, courses }: Props) {
   const exam = data.exams.find((e) => e.id === examId);
   const student = data.students.find((s) => s.id === studentId);
 
-  // 선택한 수업의 시험지·학생만
+  // 학생을 먼저 고르면 → 그 학생이 듣는 수업 + 진단테스트(모든 학생 공통)
+  const diagnostic = useMemo(() => courses.find((c) => c.id === DIAGNOSTIC_COURSE_ID), [courses]);
+  const courseOptions = useMemo(() => {
+    if (!student) return [];
+    const enrolledIds = new Set((student.courseIds ?? []).filter((id) => id !== DIAGNOSTIC_COURSE_ID));
+    const enrolledCourses = courses.filter((c) => enrolledIds.has(c.id));
+    return diagnostic ? [diagnostic, ...enrolledCourses] : enrolledCourses;
+  }, [student, courses, diagnostic]);
+
+  // 선택한 수업의 시험지만
   const examOptions = useMemo(
     () => (courseId ? data.exams.filter((e) => e.courseId === courseId) : []),
     [courseId, data.exams]
   );
-  const enrolled = useMemo(
-    () => data.students.filter((s) => (s.courseIds ?? []).includes(courseId)),
-    [courseId, data.students]
-  );
-  const usingAllStudents = !!courseId && enrolled.length === 0 && data.students.length > 0;
-  const studentOptions = courseId ? (enrolled.length > 0 ? enrolled : data.students) : [];
 
   const existing = useMemo(
     () => data.results.find((r) => r.studentId === studentId && r.examId === examId),
     [data.results, studentId, examId]
   );
 
+  const changeStudent = (id: string) => {
+    setStudentId(id);
+    setCourseId('');
+    setExamId('');
+  };
   const changeCourse = (id: string) => {
     setCourseId(id);
-    setStudentId('');
     setExamId('');
   };
 
@@ -135,20 +143,20 @@ export default function GradingPanel({ data, setData, courses }: Props) {
         <>
           <div className="assess-row wrap">
             <label className="assess-field">
-              수업
-              <select value={courseId} onChange={(e) => changeCourse(e.target.value)}>
+              학생
+              <select value={studentId} onChange={(e) => changeStudent(e.target.value)}>
                 <option value="">선택</option>
-                {courses.map((c) => (
-                  <option key={c.id} value={c.id}>{c.name}</option>
+                {data.students.map((s) => (
+                  <option key={s.id} value={s.id}>{s.name} ({s.grade})</option>
                 ))}
               </select>
             </label>
             <label className="assess-field">
-              학생
-              <select value={studentId} onChange={(e) => setStudentId(e.target.value)} disabled={!courseId}>
+              수업
+              <select value={courseId} onChange={(e) => changeCourse(e.target.value)} disabled={!studentId}>
                 <option value="">선택</option>
-                {studentOptions.map((s) => (
-                  <option key={s.id} value={s.id}>{s.name} ({s.grade})</option>
+                {courseOptions.map((c) => (
+                  <option key={c.id} value={c.id}>{c.name}</option>
                 ))}
               </select>
             </label>
@@ -167,12 +175,12 @@ export default function GradingPanel({ data, setData, courses }: Props) {
             </label>
           </div>
 
-          {!courseId && <p className="muted">먼저 수업을 선택하면 그 수업의 학생과 시험지를 고를 수 있습니다.</p>}
+          {!studentId && <p className="muted">먼저 학생을 선택하면 그 학생이 듣는 수업(및 진단테스트)을 고를 수 있습니다.</p>}
+          {studentId && courseOptions.length <= 1 && (
+            <p className="muted">이 학생은 진단테스트 외에 등록된 수업이 없습니다. [학생 관리]에서 듣는 수업을 지정할 수 있습니다.</p>
+          )}
           {courseId && examOptions.length === 0 && (
             <p className="muted">이 수업의 시험지가 없습니다. [시험지 관리]에서 이 수업으로 CSV를 업로드하세요.</p>
-          )}
-          {usingAllStudents && (
-            <p className="muted">이 수업에 등록된 학생이 없어 전체 학생을 표시합니다. [학생 관리]에서 수업을 지정할 수 있습니다.</p>
           )}
 
           {exam && (

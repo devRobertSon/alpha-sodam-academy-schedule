@@ -162,6 +162,7 @@ const HEADER_ALIASES: Record<string, string[]> = {
   answer: ['정답', 'answer', 'ans'],
   points: ['배점', '점수', 'points', 'score'],
   title: ['시험지', '시험', '시험지명', '시험명', 'title', 'exam'],
+  course: ['수업', '반', '수업명', 'class', 'course'],
 };
 
 function matchHeader(header: string): string | null {
@@ -176,6 +177,7 @@ export interface CsvParseResult {
   questions: ExamQuestion[];
   title?: string;
   subject?: string;
+  course?: string; // 수업 이름(선택) — 있으면 업로드 시 수업 자동 지정
   errors: string[];
 }
 
@@ -196,9 +198,11 @@ export function examQuestionsFromCsv(text: string): CsvParseResult {
   const idxAnswer = header.indexOf('answer');
   const idxPoints = header.indexOf('points');
   const idxTitle = header.indexOf('title');
+  const idxCourse = header.indexOf('course');
 
   let title: string | undefined;
   let subject: string | undefined;
+  let course: string | undefined;
   const questions: ExamQuestion[] = [];
   const seen = new Set<number>();
 
@@ -228,13 +232,14 @@ export function examQuestionsFromCsv(text: string): CsvParseResult {
     }
     if (idxTitle !== -1 && !title && (cells[idxTitle] ?? '').trim()) title = cells[idxTitle].trim();
     if (idxSubject !== -1 && !subject && (cells[idxSubject] ?? '').trim()) subject = cells[idxSubject].trim();
+    if (idxCourse !== -1 && !course && (cells[idxCourse] ?? '').trim()) course = cells[idxCourse].trim();
     const existing = questions.findIndex((x) => x.no === no);
     if (existing !== -1) questions[existing] = q;
     else questions.push(q);
   }
 
   questions.sort((a, b) => a.no - b.no);
-  return { questions, title, subject, errors };
+  return { questions, title, subject, course, errors };
 }
 
 // ── 파일 다운로드 ────────────────────────────────────────

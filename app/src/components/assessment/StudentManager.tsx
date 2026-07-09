@@ -2,6 +2,7 @@ import { Fragment, useRef, useState } from 'react';
 import {
   AssessmentData,
   CourseOption,
+  DIAGNOSTIC_COURSE_ID,
   Student,
   downloadText,
   newId,
@@ -11,7 +12,7 @@ import {
   upsertStudents,
 } from '../../lib/assessment';
 
-const GRADES = ['초5', '초6', '중1', '중2', '중3', '고1', '고2', '고3'];
+const GRADES = ['초3', '초4', '초5', '초6', '중1', '중2', '중3', '고1', '고2', '고3'];
 
 interface Props {
   data: AssessmentData;
@@ -24,6 +25,9 @@ export default function StudentManager({ data, setData, courses }: Props) {
   const [grade, setGrade] = useState('중1');
   const [openId, setOpenId] = useState<string | null>(null);
   const csvRef = useRef<HTMLInputElement>(null);
+
+  // 진단테스트는 수강 과목이 아니라 채점 입력에서만 쓰는 특수 수업 → 수강 목록에서 제외
+  const enrollCourses = courses.filter((c) => c.id !== DIAGNOSTIC_COURSE_ID);
 
   const exportCsv = () => downloadText(`학생목록_${todayStr()}.csv`, studentsToCsv(data.students, courses));
 
@@ -120,7 +124,7 @@ export default function StudentManager({ data, setData, courses }: Props) {
           <tbody>
             {data.students.map((s) => {
               const cnt = data.results.filter((r) => r.studentId === s.id).length;
-              const enrolled = s.courseIds ?? [];
+              const enrolled = (s.courseIds ?? []).filter((id) => id !== DIAGNOSTIC_COURSE_ID);
               return (
                 <Fragment key={s.id}>
                   <tr>
@@ -156,7 +160,7 @@ export default function StudentManager({ data, setData, courses }: Props) {
                         <div className="course-picker-row">
                           <span className="hint">듣는 수업을 선택하세요(여러 개 가능) · 입시 상담 로드맵의 과정 목록</span>
                           <div className="course-chips">
-                            {courses.map((c) => {
+                            {enrollCourses.map((c) => {
                               const on = enrolled.includes(c.id);
                               return (
                                 <button

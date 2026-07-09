@@ -1,7 +1,8 @@
-import { useRef, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import {
   AssessmentData,
   exportAssessmentJson,
+  listCourses,
   loadAssessment,
   parseAssessmentJson,
   saveAssessment,
@@ -29,6 +30,7 @@ export default function AssessmentApp({ onHome }: { onHome: () => void }) {
   };
   const [tab, setTab] = useState<Tab>('students');
   const fileRef = useRef<HTMLInputElement>(null);
+  const courses = useMemo(() => listCourses(), []);
 
   const importJson = async (file: File) => {
     try {
@@ -76,9 +78,9 @@ export default function AssessmentApp({ onHome }: { onHome: () => void }) {
       </nav>
 
       <section className="card">
-        {tab === 'students' && <StudentManager data={data} setData={setData} />}
-        {tab === 'exams' && <ExamManager data={data} setData={setData} />}
-        {tab === 'grading' && <GradingPanel data={data} setData={setData} />}
+        {tab === 'students' && <StudentManager data={data} setData={setData} courses={courses} />}
+        {tab === 'exams' && <ExamManager data={data} setData={setData} courses={courses} />}
+        {tab === 'grading' && <GradingPanel data={data} setData={setData} courses={courses} />}
         {tab === 'report' && <TypeReport data={data} />}
       </section>
     </div>

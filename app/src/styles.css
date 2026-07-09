@@ -850,6 +850,39 @@ body {
   margin-right: 3px;
 }
 
+/* 학생 수업(class) 선택 */
+.course-picker-row {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 4px 2px 8px;
+}
+.course-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.course-chip {
+  padding: 5px 11px;
+  border: 1px solid var(--line);
+  background: #fff;
+  border-radius: 999px;
+  cursor: pointer;
+  font-size: 12.5px;
+  color: var(--ink);
+}
+.course-chip:hover {
+  border-color: var(--accent);
+}
+.course-chip.on {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+.course-selected {
+  font-size: 12px;
+}
+
 /* O/X 채점 그리드 */
 .ox-grid {
   display: grid;

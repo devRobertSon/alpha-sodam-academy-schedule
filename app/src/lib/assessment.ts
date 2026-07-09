@@ -1,7 +1,30 @@
 // src/lib/assessment.ts — 학생 개별 평가 데이터(학생·시험지·채점) + CSV 임포트 + 집계
 // 저장: localStorage 단일 키 + JSON 백업
+import { loadStore } from './store';
 
 export type ExamKind = '진단' | '주별';
+
+// 수업(class) — 입시 상담 로드맵의 과정 목록 + 진단테스트 특수 수업
+export interface CourseOption {
+  id: string;
+  name: string;
+}
+export const DIAGNOSTIC_COURSE_ID = 'diagnostic';
+
+export function listCourses(): CourseOption[] {
+  let roadmap: CourseOption[] = [];
+  try {
+    roadmap = loadStore().courses.map((c) => ({ id: c.id, name: c.name }));
+  } catch {
+    roadmap = [];
+  }
+  return [{ id: DIAGNOSTIC_COURSE_ID, name: '진단테스트' }, ...roadmap];
+}
+
+export function resolveCourseName(courses: CourseOption[], id?: string): string {
+  if (!id) return '(수업 미지정)';
+  return courses.find((c) => c.id === id)?.name ?? '(삭제된 수업)';
+}
 
 export interface ExamQuestion {
   no: number;
@@ -16,6 +39,7 @@ export interface Exam {
   subject: string;
   kind: ExamKind;
   date: string; // YYYY-MM-DD
+  courseId?: string; // 어느 수업의 시험지인지
   questions: ExamQuestion[];
 }
 
@@ -24,6 +48,7 @@ export interface Student {
   name: string;
   grade: string;
   memo?: string;
+  courseIds?: string[]; // 학생이 듣는 수업들
 }
 
 export interface Mark {

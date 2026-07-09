@@ -1,14 +1,16 @@
 import { useEffect, useMemo, useState } from 'react';
-import { AssessmentData, Mark, Result, newId, scoreOf, todayStr } from '../../lib/assessment';
+import { AssessmentData, CourseOption, Mark, Result, newId, scoreOf, todayStr } from '../../lib/assessment';
 
 interface Props {
   data: AssessmentData;
   setData: (d: AssessmentData) => void;
+  courses: CourseOption[];
 }
 
 type Cell = boolean | null; // true=O(맞음), false=X(틀림), null=미입력
 
-export default function GradingPanel({ data, setData }: Props) {
+export default function GradingPanel({ data, setData, courses }: Props) {
+  const [courseId, setCourseId] = useState('');
   const [studentId, setStudentId] = useState('');
   const [examId, setExamId] = useState('');
   const [cells, setCells] = useState<Record<number, Cell>>({});
@@ -16,10 +18,28 @@ export default function GradingPanel({ data, setData }: Props) {
 
   const exam = data.exams.find((e) => e.id === examId);
 
+  // 선택한 수업의 시험지·학생만
+  const examOptions = useMemo(
+    () => (courseId ? data.exams.filter((e) => e.courseId === courseId) : []),
+    [courseId, data.exams]
+  );
+  const enrolled = useMemo(
+    () => data.students.filter((s) => (s.courseIds ?? []).includes(courseId)),
+    [courseId, data.students]
+  );
+  const usingAllStudents = !!courseId && enrolled.length === 0 && data.students.length > 0;
+  const studentOptions = courseId ? (enrolled.length > 0 ? enrolled : data.students) : [];
+
   const existing = useMemo(
     () => data.results.find((r) => r.studentId === studentId && r.examId === examId),
     [data.results, studentId, examId]
   );
+
+  const changeCourse = (id: string) => {
+    setCourseId(id);
+    setStudentId('');
+    setExamId('');
+  };
 
   // 학생·시험 바뀌면 기존 채점 불러오기(없으면 빈칸)
   useEffect(() => {
@@ -54,7 +74,7 @@ export default function GradingPanel({ data, setData }: Props) {
 
   const save = () => {
     if (!studentId || !exam) {
-      alert('학생과 시험지를 선택하세요.');
+      alert('수업·학생·시험지를 모두 선택하세요.');
       return;
     }
     const res: Result = {
@@ -79,19 +99,28 @@ export default function GradingPanel({ data, setData }: Props) {
         <>
           <div className="assess-row wrap">
             <label className="assess-field">
-              학생
-              <select value={studentId} onChange={(e) => setStudentId(e.target.value)}>
+              수업
+              <select value={courseId} onChange={(e) => changeCourse(e.target.value)}>
                 <option value="">선택</option>
-                {data.students.map((s) => (
+                {courses.map((c) => (
+                  <option key={c.id} value={c.id}>{c.name}</option>
+                ))}
+              </select>
+            </label>
+            <label className="assess-field">
+              학생
+              <select value={studentId} onChange={(e) => setStudentId(e.target.value)} disabled={!courseId}>
+                <option value="">선택</option>
+                {studentOptions.map((s) => (
                   <option key={s.id} value={s.id}>{s.name} ({s.grade})</option>
                 ))}
               </select>
             </label>
             <label className="assess-field">
               시험지
-              <select value={examId} onChange={(e) => setExamId(e.target.value)}>
+              <select value={examId} onChange={(e) => setExamId(e.target.value)} disabled={!courseId}>
                 <option value="">선택</option>
-                {data.exams.map((ex) => (
+                {examOptions.map((ex) => (
                   <option key={ex.id} value={ex.id}>{ex.title} ({ex.kind}·{ex.questions.length}문항)</option>
                 ))}
               </select>
@@ -101,6 +130,14 @@ export default function GradingPanel({ data, setData }: Props) {
               <input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
             </label>
           </div>
+
+          {!courseId && <p className="muted">먼저 수업을 선택하면 그 수업의 학생과 시험지를 고를 수 있습니다.</p>}
+          {courseId && examOptions.length === 0 && (
+            <p className="muted">이 수업의 시험지가 없습니다. [시험지 관리]에서 이 수업으로 CSV를 업로드하세요.</p>
+          )}
+          {usingAllStudents && (
+            <p className="muted">이 수업에 등록된 학생이 없어 전체 학생을 표시합니다. [학생 관리]에서 수업을 지정할 수 있습니다.</p>
+          )}
 
           {exam && (
             <>

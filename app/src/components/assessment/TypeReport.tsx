@@ -6,10 +6,38 @@ interface Props {
   data: AssessmentData;
 }
 
+// 이 문제 수 이상인 유형만 차트(막대·레이더)에 표시. 그 미만은 아래 비고 표로.
+const MIN_CHART_TOTAL = 5;
+
 function rateColor(rate: number): string {
   if (rate >= 0.8) return '#2C79D0';
   if (rate >= 0.5) return '#E3A72E';
   return '#D6443B';
+}
+
+function MinorNote({ stats }: { stats: TypeStat[] }) {
+  if (stats.length === 0) return null;
+  return (
+    <div className="type-minor">
+      <div className="type-minor-head">
+        참고 · 문제 수가 적은 유형 (각 {MIN_CHART_TOTAL}문제 미만이라 차트에서 제외)
+      </div>
+      <table className="type-minor-table">
+        <thead>
+          <tr><th>유형</th><th>정답률</th><th>문항</th></tr>
+        </thead>
+        <tbody>
+          {stats.map((s) => (
+            <tr key={s.type}>
+              <td>{s.type}</td>
+              <td style={{ color: rateColor(s.rate), fontWeight: 700 }}>{Math.round(s.rate * 100)}%</td>
+              <td className="muted">{s.correct}/{s.total}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
 }
 
 function TypeBars({ stats }: { stats: TypeStat[] }) {
@@ -159,6 +187,8 @@ export default function TypeReport({ data }: Props) {
     () => (studentId ? typeStatsCumulative(data.exams, selectedResults) : []),
     [studentId, data.exams, selectedResults]
   );
+  const mainStats = useMemo(() => stats.filter((s) => s.total >= MIN_CHART_TOTAL), [stats]);
+  const minorStats = useMemo(() => stats.filter((s) => s.total < MIN_CHART_TOTAL), [stats]);
 
   const toggle = (id: string) =>
     setSelectedIds((prev) => {
@@ -278,12 +308,21 @@ export default function TypeReport({ data }: Props) {
 
               <div className="assess-card">
                 <h3>유형별 정답률</h3>
-                <TypeBars stats={stats} />
-                {stats.length > 0 && (
-                  <div className="type-radar-wrap">
-                    <TypeRadar stats={stats} />
-                  </div>
+                {mainStats.length === 0 ? (
+                  <p className="muted">
+                    {stats.length === 0
+                      ? '표시할 데이터가 없습니다.'
+                      : `문제 수가 ${MIN_CHART_TOTAL}개 이상인 유형이 없어 차트를 생략합니다. (아래 참고 표)`}
+                  </p>
+                ) : (
+                  <>
+                    <TypeBars stats={mainStats} />
+                    <div className="type-radar-wrap">
+                      <TypeRadar stats={mainStats} />
+                    </div>
+                  </>
                 )}
+                <MinorNote stats={minorStats} />
               </div>
 
               <div className="assess-card">

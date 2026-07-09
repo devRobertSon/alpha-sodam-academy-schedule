@@ -52,6 +52,12 @@ describe('examQuestionsFromCsv', () => {
     expect(r.questions[0].type).toBe('Algebra');
   });
 
+  it('수업 열이 있으면 course를 읽는다', () => {
+    const r = examQuestionsFromCsv('시험지,수업,문항번호,유형\n1차 진단,진단테스트,1,계산\n1차 진단,진단테스트,2,추론');
+    expect(r.course).toBe('진단테스트');
+    expect(r.questions).toHaveLength(2);
+  });
+
   it('필수 열이 없으면 에러', () => {
     const r = examQuestionsFromCsv('과목,정답\n과학,3');
     expect(r.questions).toHaveLength(0);

@@ -12,7 +12,7 @@ import {
   upsertStudents,
 } from '../../lib/assessment';
 
-const GRADES = ['초5', '초6', '중1', '중2', '중3', '고1', '고2', '고3'];
+const GRADES = ['초3', '초4', '초5', '초6', '중1', '중2', '중3', '고1', '고2', '고3'];
 
 interface Props {
   data: AssessmentData;

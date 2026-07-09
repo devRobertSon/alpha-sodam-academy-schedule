@@ -25,7 +25,7 @@ export default function HomePage({ onNavigate }: Props) {
         <button className="home-card" onClick={() => onNavigate('assessment')}>
           <span className="home-card-emoji" aria-hidden>📊</span>
           <span className="home-card-title">학생 개별 평가</span>
-          <span className="home-card-desc">진단·주별 평가를 채점하고 유형별 리포트로 취약점 파악</span>
+          <span className="home-card-desc">진단·단원 평가를 채점하고 유형별 리포트로 취약점 파악</span>
         </button>
       </div>
 

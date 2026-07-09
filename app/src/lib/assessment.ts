@@ -2,7 +2,7 @@
 // 저장: localStorage 단일 키 + JSON 백업
 import { loadStore } from './store';
 
-export type ExamKind = '진단' | '주별';
+export type ExamKind = '진단' | '단원';
 
 // 수업(class) — 입시 상담 로드맵의 과정 목록 + 진단테스트 특수 수업
 export interface CourseOption {
@@ -81,9 +81,13 @@ export function loadAssessment(): AssessmentData {
     const raw = localStorage.getItem(KEY);
     if (!raw) return emptyAssessment();
     const p = JSON.parse(raw) as Partial<AssessmentData>;
+    // 이전 '주별' 종류를 '단원'으로 이관
+    const exams = (Array.isArray(p.exams) ? p.exams : []).map((e) =>
+      (e.kind as string) === '주별' ? { ...e, kind: '단원' as ExamKind } : e
+    );
     return {
       students: Array.isArray(p.students) ? p.students : [],
-      exams: Array.isArray(p.exams) ? p.exams : [],
+      exams,
       results: Array.isArray(p.results) ? p.results : [],
     };
   } catch {

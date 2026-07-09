@@ -36,6 +36,94 @@ function TypeBars({ stats }: { stats: TypeStat[] }) {
   );
 }
 
+const RADAR_W = 480;
+const RADAR_H = 390;
+const RADAR_R = 128;
+
+function TypeRadar({ stats }: { stats: TypeStat[] }) {
+  if (stats.length < 3) {
+    return <p className="muted">레이더 차트는 유형이 3개 이상일 때 표시됩니다.</p>;
+  }
+  const cx = RADAR_W / 2;
+  const cy = RADAR_H / 2 + 8;
+  const n = stats.length;
+  const angleOf = (i: number) => -Math.PI / 2 + (2 * Math.PI * i) / n;
+  const ptOf = (i: number, r: number): [number, number] => [
+    cx + r * Math.cos(angleOf(i)),
+    cy + r * Math.sin(angleOf(i)),
+  ];
+  const ringPoly = (ratio: number) =>
+    stats.map((_, i) => ptOf(i, RADAR_R * ratio).map((v) => v.toFixed(1)).join(',')).join(' ');
+  const dataPoly = stats
+    .map((s, i) => ptOf(i, RADAR_R * s.rate).map((v) => v.toFixed(1)).join(','))
+    .join(' ');
+  const shorten = (t: string) => (t.length > 12 ? t.slice(0, 11) + '…' : t);
+
+  return (
+    <svg
+      className="type-radar"
+      viewBox={`0 0 ${RADAR_W} ${RADAR_H}`}
+      role="img"
+      aria-label="유형별 정답률 레이더 차트"
+    >
+      {[0.25, 0.5, 0.75, 1].map((ratio) => (
+        <polygon
+          key={ratio}
+          points={ringPoly(ratio)}
+          fill={ratio === 1 ? '#F3F7FD' : 'none'}
+          stroke="#D5DFF0"
+          strokeWidth={ratio === 1 ? 1.2 : 0.8}
+        />
+      ))}
+      {stats.map((_, i) => {
+        const [x, y] = ptOf(i, RADAR_R);
+        return <line key={`axis-${i}`} x1={cx} y1={cy} x2={x} y2={y} stroke="#D5DFF0" strokeWidth={0.8} />;
+      })}
+      {[0.25, 0.5, 0.75, 1].map((ratio) => (
+        <text
+          key={`ring-label-${ratio}`}
+          x={cx + 4}
+          y={cy - RADAR_R * ratio - 2}
+          fontSize={8.5}
+          fill="#8894AB"
+        >
+          {Math.round(ratio * 100)}
+        </text>
+      ))}
+
+      <polygon points={dataPoly} fill="rgba(44,121,208,0.22)" stroke="#2C79D0" strokeWidth={2} strokeLinejoin="round" />
+      {stats.map((s, i) => {
+        const [x, y] = ptOf(i, RADAR_R * s.rate);
+        return (
+          <circle key={`dot-${i}`} cx={x} cy={y} r={3.5} fill={rateColor(s.rate)} stroke="#fff" strokeWidth={1.2}>
+            <title>{`${s.type} ${Math.round(s.rate * 100)}% (${s.correct}/${s.total})`}</title>
+          </circle>
+        );
+      })}
+
+      {stats.map((s, i) => {
+        const a = angleOf(i);
+        const cos = Math.cos(a);
+        const sin = Math.sin(a);
+        const [x, y] = ptOf(i, RADAR_R + 16);
+        const anchor = Math.abs(cos) < 0.35 ? 'middle' : cos > 0 ? 'start' : 'end';
+        const dy = sin < -0.35 ? -8 : sin > 0.35 ? 10 : 0;
+        return (
+          <g key={`label-${i}`} textAnchor={anchor}>
+            <text x={x} y={y + dy} fontSize={11} fontWeight={600} fill="#16224E">
+              {shorten(s.type)}
+              <title>{s.type}</title>
+            </text>
+            <text x={x} y={y + dy + 13} fontSize={10} fill={rateColor(s.rate)} fontWeight={700}>
+              {Math.round(s.rate * 100)}%
+            </text>
+          </g>
+        );
+      })}
+    </svg>
+  );
+}
+
 export default function TypeReport({ data }: Props) {
   const [studentId, setStudentId] = useState('');
   const [scope, setScope] = useState<string>('all'); // 'all' 또는 resultId
@@ -93,6 +181,11 @@ export default function TypeReport({ data }: Props) {
           <div className="assess-card">
             <h3>유형별 정답률</h3>
             <TypeBars stats={stats} />
+            {stats.length > 0 && (
+              <div className="type-radar-wrap">
+                <TypeRadar stats={stats} />
+              </div>
+            )}
           </div>
 
           <div className="assess-card">

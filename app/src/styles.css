@@ -962,6 +962,21 @@ body {
   font-variant-numeric: tabular-nums;
 }
 
+/* 유형별 정답률 레이더 차트 */
+.type-radar-wrap {
+  display: flex;
+  justify-content: center;
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+}
+.type-radar {
+  width: 100%;
+  max-width: 520px;
+  height: auto;
+  display: block;
+}
+
 /* ── 인쇄 / PNG 공통 레이아웃(B-1 클린 레저) ─────
    시각 스타일은 기본 클래스에 둔다(인쇄 + PNG 캡처가 함께 사용).
    @media print 는 페이지 나눔·표시 전환·치수 보정만 담당. */

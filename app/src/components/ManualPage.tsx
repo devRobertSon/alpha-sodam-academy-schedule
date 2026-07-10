@@ -284,8 +284,11 @@ export default function ManualPage({ onHome }: { onHome: () => void }) {
         </ul>
       </section>
 
-      <section className="card manual-card">
-        <h2>🔬 과학 사고 역량별 가이드 · 보완 훈련 (6+2)</h2>
+      <details className="card manual-card manual-fold">
+        <summary className="manual-fold-summary">
+          <h2>🔬 과학 사고 역량별 가이드 · 보완 훈련 (6+2)</h2>
+          <span className="manual-fold-hint">펼치기 / 접기</span>
+        </summary>
         <p className="manual-lead">
           영재학교·과학고 대비 · 학생이 <b>무엇으로 푸는가</b>(사고 역량) 축으로 문항을 분류합니다.
           시험지 채점의 <b>유형</b> 칸에는 아래 <b>핵심 6종(T1~T6)</b>의 이름을 그대로 적습니다(예: <code>자료 해석</code>).
@@ -343,10 +346,13 @@ export default function ManualPage({ onHome }: { onHome: () => void }) {
         <p className="muted">
           한 번에 다 잡지 않습니다. 가장 낮은 역량 하나를 골라 <b>4주 사이클</b>(1주 개념 복구 → 2주 구조 반복 → 3주 서술·근거 → 4주 통합·재진단)로 집중 보강한 뒤 다시 진단해 다음 역량으로 넘어갑니다.
         </p>
-      </section>
+      </details>
 
-      <section className="card manual-card">
-        <h2>📚 수학 유형별 역량 · 보완 훈련 가이드 (7종)</h2>
+      <details className="card manual-card manual-fold">
+        <summary className="manual-fold-summary">
+          <h2>📚 수학 유형별 역량 · 보완 훈련 가이드 (7종)</h2>
+          <span className="manual-fold-hint">펼치기 / 접기</span>
+        </summary>
         <p className="manual-lead">
           소담 알파학원 · 2026.7.8 원장 확정 · 매쓰플랫 입학 TEST 심화형 11종(초5~중3, 330문항) 분석.
           수학 시험지의 유형은 아래 <b>7종</b>을 사용합니다.
@@ -372,7 +378,7 @@ export default function ManualPage({ onHome }: { onHome: () => void }) {
           </div>
         ))}
 
-      </section>
+      </details>
 
       <footer className="app-footer">
         <button className="home-link" onClick={onHome}>← 홈으로 돌아가기</button>

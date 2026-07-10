@@ -35,12 +35,25 @@ export function loadStore(): StoreData {
       ? (parsed.courses as Course[]).filter((c) => validIds.has(c.id))
       : def.courses;
     const existingIds = new Set(courses.map((c) => c.id));
+    const addedIds: string[] = [];
     for (const c of def.courses) {
-      if (!existingIds.has(c.id)) courses.push(c);
+      if (!existingIds.has(c.id)) {
+        courses.push(c);
+        addedIds.push(c.id);
+      }
     }
     let includedIds = Array.isArray(parsed.includedIds)
       ? parsed.includedIds.filter((id) => validIds.has(id))
       : def.includedIds;
+    // 새로 추가된 기본 과정(예: 수학)은 로드맵에 기본 포함
+    const defIncluded = new Set(def.includedIds);
+    const includedSet = new Set(includedIds);
+    for (const id of addedIds) {
+      if (defIncluded.has(id) && !includedSet.has(id)) {
+        includedIds.push(id);
+        includedSet.add(id);
+      }
+    }
     return { courses, includedIds };
   } catch {
     return defaultStore();

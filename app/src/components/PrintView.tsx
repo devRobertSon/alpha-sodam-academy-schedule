@@ -3,6 +3,7 @@
 // 2페이지~: 가로 방향, 한 장에 월 시간표 2개(좌·우), 마지막 달까지
 import {
   Course,
+  LAST_IDX,
   TimeSlot,
   Weekday,
   courseColor,
@@ -116,7 +117,7 @@ function StaticTimetable({
         if (dayIdx < 0) return null;
         const top = HEAD_H + ((toMin(b.slot.start) - minStart) / SLOT_MIN) * SLOT_H;
         const h = ((toMin(b.slot.end) - toMin(b.slot.start)) / SLOT_MIN) * SLOT_H;
-        const c = courseColor(b.type);
+        const c = courseColor(b.type, b.subject);
         return (
           <div
             key={b.key}
@@ -153,7 +154,7 @@ export default function PrintView({
   today,
 }: Props) {
   const rem = remainingCourses(courses, '공통', atIdx, shifts, includedIds);
-  const endIdx = rem.length ? Math.min(59, Math.max(...rem.map((e) => e.endIdx))) : atIdx;
+  const endIdx = rem.length ? Math.min(LAST_IDX, Math.max(...rem.map((e) => e.endIdx))) : atIdx;
 
   // 현재 달 ~ 마지막 수업 달 중, 실제로 수업이 있는 달만 인쇄
   const months: number[] = [];

@@ -16,13 +16,14 @@ const courses = defaultStore().courses;
 const byId = (id: string) => courses.find((c) => c.id === id)!;
 
 describe('월 인덱스', () => {
-  it('중2 9월 → 42, 중1 6월 → 27', () => {
-    expect(nowIndex('중2', 9)).toBe(42);
-    expect(nowIndex('중1', 6)).toBe(27);
+  it('중2 9월 → 54, 중1 6월 → 39', () => {
+    expect(nowIndex('중2', 9)).toBe(54);
+    expect(nowIndex('중1', 6)).toBe(39);
   });
-  it('초5 3월 = 0, 중3 2월 = 59', () => {
-    expect(gmIndex('초5', 3)).toBe(0);
-    expect(gmIndex('중3', 2)).toBe(59);
+  it('초4 3월 = 0, 초5 3월 = 12, 중3 2월 = 71', () => {
+    expect(gmIndex('초4', 3)).toBe(0);
+    expect(gmIndex('초5', 3)).toBe(12);
+    expect(gmIndex('중3', 2)).toBe(71);
   });
 });
 
@@ -62,7 +63,7 @@ describe('수강 월 이동(shift)', () => {
     expect(moved.endIdx).toBe(base.endIdx + 3);
   });
   it('shift로 상태가 예정으로 바뀔 수 있다', () => {
-    const atIdx = nowIndex('중2', 9); // 42
+    const atIdx = nowIndex('중2', 9); // 54
     const c = byId('gyo_sci_m3_1'); // 중2 9월~11월 → 진행중
     expect(courseStatus(c, atIdx, 0)).toBe('진행중');
     expect(courseStatus(c, atIdx, 6)).toBe('예정');

@@ -13,6 +13,7 @@ import {
   COURSE_COLORS,
   Course,
   courseColor,
+  LAST_IDX,
   TimeSlot,
   Track,
   Weekday,
@@ -58,7 +59,7 @@ function Block({ block, conflict }: { block: TimetableBlock; conflict: boolean }
   const top = HEAD_H + minToSlot(toMin(block.slot.start)) * SLOT_H;
   const height = ((toMin(block.slot.end) - toMin(block.slot.start)) / SLOT_MIN) * SLOT_H;
   const left = TIME_COL_W + dayIdx * DAY_W;
-  const c = courseColor(block.type);
+  const c = courseColor(block.type, block.subject);
   return (
     <div
       ref={setNodeRef}
@@ -177,7 +178,7 @@ export default function MonthlyTimetable({
         <span className="month-label">
           {gradeOfIndex(viewIdx)} {monthOfIndex(viewIdx)}월 시간표
         </span>
-        <button onClick={() => onViewIdxChange(Math.min(59, viewIdx + 1))} disabled={viewIdx >= 59}>
+        <button onClick={() => onViewIdxChange(Math.min(LAST_IDX, viewIdx + 1))} disabled={viewIdx >= LAST_IDX}>
           다음 달 ▶
         </button>
       </div>
@@ -248,7 +249,7 @@ export default function MonthlyTimetable({
           <ul>
             {lessons.map((b) => (
               <li key={b.key}>
-                <span className="dot" style={{ background: courseColor(b.type).fill }} />
+                <span className="dot" style={{ background: courseColor(b.type, b.subject).fill }} />
                 {b.slot.day} {b.slot.start}~{b.slot.end} · {b.label}
                 {b.teacher ? ` · ${b.teacher} 쌤` : ''}
               </li>

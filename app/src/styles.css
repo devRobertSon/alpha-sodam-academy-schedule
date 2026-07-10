@@ -739,6 +739,18 @@ body {
   font-size: 15px;
   color: var(--accent);
 }
+.guide-badge {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 1px 8px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--muted);
+  background: var(--accent-soft);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  vertical-align: middle;
+}
 .guide-def {
   font-weight: 600;
   margin: 0 0 6px;

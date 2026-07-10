@@ -19,7 +19,7 @@ import {
   parseStoreJson,
 } from '../lib/store';
 
-const SUBJECTS: Subject[] = ['과학'];
+const SUBJECTS: Subject[] = ['과학', '수학'];
 const TRACK_OPTIONS: Track[] = [...TRACKS];
 const DAYS: Weekday[] = ['월', '화', '수', '목', '금', '토', '일'];
 const MONTHS = [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 1, 2];

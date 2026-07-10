@@ -4,6 +4,7 @@ import {
   courseColor,
   GRADES,
   gradeOfIndex,
+  LAST_IDX,
   monthOfIndex,
   monthToSeason,
 } from '../data/roadmap';
@@ -60,8 +61,8 @@ export default function RemainingRoadmap({
   const dragRef = useRef<DragState | null>(null);
   dragRef.current = drag;
 
-  const axisStart = Math.min(atIdx, 59);
-  const axisEnd = 59;
+  const axisStart = Math.min(atIdx, LAST_IDX);
+  const axisEnd = LAST_IDX;
   const cols = Math.max(1, axisEnd - axisStart + 1);
   const plotW = cols * COL_W;
   const chartW = LABEL_W + plotW;
@@ -101,7 +102,7 @@ export default function RemainingRoadmap({
       const deltaCols = Math.round(dx / COL_W);
       let newShift = d.origShift + deltaCols;
       const minShift = atIdx - d.baseStart;
-      const maxShift = 59 - d.baseEnd;
+      const maxShift = LAST_IDX - d.baseEnd;
       if (newShift < minShift) newShift = minShift;
       if (newShift > maxShift) newShift = maxShift;
       onShiftChange(d.id, newShift);
@@ -121,7 +122,7 @@ export default function RemainingRoadmap({
     };
   }, [drag, atIdx, onShiftChange]);
 
-  if (atIdx >= 59) {
+  if (atIdx >= LAST_IDX) {
     return <p className="muted">중3 2월 이후로는 남은 과정이 없습니다.</p>;
   }
 
@@ -186,7 +187,7 @@ export default function RemainingRoadmap({
         const x = xOf(e.startIdx);
         const w = (e.endIdx - e.startIdx + 1) * COL_W;
         const y = courseTop + e.level * ROW_H;
-        const c = courseColor(e.course.type);
+        const c = courseColor(e.course.type, e.course.subject);
         const isDragging = drag?.id === e.course.id && drag.moved;
         const isSelected = selectedId === e.course.id;
         return (

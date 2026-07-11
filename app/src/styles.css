@@ -628,7 +628,8 @@ body {
   flex-wrap: wrap;
   font-size: 13px;
 }
-.cloud-login {
+/* .admin-toolbar button 등 상위 툴바 버튼 규칙에 덮이지 않도록 .cloud-bar로 한정해 우선순위를 올림 */
+.cloud-bar .cloud-login {
   padding: 6px 12px;
   border: 1px solid var(--accent);
   background: var(--accent);
@@ -637,7 +638,7 @@ body {
   cursor: pointer;
   font-size: 13px;
 }
-.cloud-logout {
+.cloud-bar .cloud-logout {
   padding: 5px 10px;
   border: 1px solid var(--line);
   background: #fff;

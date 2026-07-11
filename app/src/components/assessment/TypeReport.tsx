@@ -215,18 +215,20 @@ export default function TypeReport({ data }: Props) {
       const pdf = new jsPDF('p', 'mm', 'a4');
       const pageW = pdf.internal.pageSize.getWidth();
       const pageH = pdf.internal.pageSize.getHeight();
+      const MARGIN = 12; // 상하좌우 여백(mm) — 인쇄 시 잘림 방지
+      const contentW = pageW - MARGIN * 2;
+      const contentH = pageH - MARGIN * 2;
       const props = pdf.getImageProperties(dataUrl);
-      const imgW = pageW;
-      const imgH = (props.height * imgW) / props.width;
-      let heightLeft = imgH;
-      let position = 0;
-      pdf.addImage(dataUrl, 'JPEG', 0, position, imgW, imgH);
-      heightLeft -= pageH;
-      while (heightLeft > 0) {
-        position -= pageH;
-        pdf.addPage();
-        pdf.addImage(dataUrl, 'JPEG', 0, position, imgW, imgH);
-        heightLeft -= pageH;
+      const imgH = (props.height * contentW) / props.width;
+      const pages = Math.max(1, Math.ceil(imgH / contentH));
+      for (let k = 0; k < pages; k++) {
+        if (k > 0) pdf.addPage();
+        // 이미지를 여백 안쪽에 배치하고, 페이지마다 위로 밀어 다음 구간을 보여줌
+        pdf.addImage(dataUrl, 'JPEG', MARGIN, MARGIN - k * contentH, contentW, imgH);
+        // 인접 구간이 상·하 여백으로 넘쳐 보이지 않도록 여백 영역을 흰색으로 덮음
+        pdf.setFillColor(255, 255, 255);
+        pdf.rect(0, 0, pageW, MARGIN, 'F');
+        pdf.rect(0, pageH - MARGIN, pageW, MARGIN, 'F');
       }
       pdf.save(`리포트_${student.name}_${today}.pdf`);
     } catch (e) {

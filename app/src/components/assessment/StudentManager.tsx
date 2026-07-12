@@ -14,6 +14,11 @@ import {
 
 const GRADES = ['초3', '초4', '초5', '초6', '중1', '중2', '중3', '고1', '고2', '고3'];
 
+// 업로드 예시(양식) — 받아서 내용만 바꿔 다시 올리면 됩니다.
+const SAMPLE_STUDENTS_CSV = `이름,학년,듣는수업
+이영희,중2,과학 중2-1;수학 중2-1
+김민수,중3,과학 중3-1;공통수학1`;
+
 interface Props {
   data: AssessmentData;
   setData: (d: AssessmentData) => void;
@@ -30,6 +35,7 @@ export default function StudentManager({ data, setData, courses }: Props) {
   const enrollCourses = courses.filter((c) => c.id !== DIAGNOSTIC_COURSE_ID);
 
   const exportCsv = () => downloadText(`학생목록_${todayStr()}.csv`, studentsToCsv(data.students, courses));
+  const downloadSample = () => downloadText('학생목록_예시.csv', SAMPLE_STUDENTS_CSV);
 
   const importCsv = async (file: File) => {
     const { drafts, errors } = parseStudentsCsv(await file.text(), courses);
@@ -90,6 +96,7 @@ export default function StudentManager({ data, setData, courses }: Props) {
         <button className="primary" onClick={add}>+ 학생 추가</button>
         <span style={{ marginLeft: 'auto' }} />
         <button className="ghost" onClick={exportCsv}>CSV 내려받기</button>
+        <button className="ghost" onClick={downloadSample}>예시 CSV</button>
         <button className="ghost" onClick={() => csvRef.current?.click()}>CSV 올리기</button>
         <input
           ref={csvRef}
@@ -103,9 +110,19 @@ export default function StudentManager({ data, setData, courses }: Props) {
           }}
         />
       </div>
-      <p className="hint" style={{ marginTop: -4 }}>
-        CSV 열: 이름, 학년, 듣는수업(수업 이름을 <b>;</b>로 구분). 같은 이름은 갱신됩니다.
-      </p>
+      <details className="csv-help">
+        <summary>CSV 어떻게 만드나요?</summary>
+        <p>
+          엑셀·구글 시트에서 아래 형식으로 만들어 <b>CSV로 저장</b>해 올리거나, <b>[예시 CSV]</b> 버튼으로 양식을 받아 내용만 바꿔 올리세요.
+        </p>
+        <ul>
+          <li><b>이름</b> — 학생 이름 (필수)</li>
+          <li><b>학년</b> — 예: 초5, 중2 (필수)</li>
+          <li><b>듣는수업</b> — 로드맵의 수업 이름. 여러 개면 <b>;</b>(세미콜론)으로 구분 (선택)</li>
+        </ul>
+        <pre className="manual-code">{SAMPLE_STUDENTS_CSV}</pre>
+        <p className="muted">열 순서는 무관하고 헤더 이름으로 인식합니다. 같은 이름의 학생은 갱신됩니다. 수업 이름은 <b>관리 탭 / 로드맵</b>의 과정 이름과 같아야 합니다.</p>
+      </details>
 
       {data.students.length === 0 ? (
         <p className="muted">아직 등록된 학생이 없습니다. 이름을 입력해 추가하세요.</p>

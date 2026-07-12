@@ -409,6 +409,46 @@ body {
   color: var(--muted);
 }
 
+/* CSV 업로드 형식 도움말(접이식) — 학생/시험지 관리 */
+.csv-help {
+  margin: 6px 0 2px;
+  font-size: 13px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--accent-soft, #f3f7fd);
+  padding: 8px 12px;
+}
+.csv-help > summary {
+  cursor: pointer;
+  color: var(--accent);
+  font-weight: 600;
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.csv-help > summary::-webkit-details-marker {
+  display: none;
+}
+.csv-help > summary::before {
+  content: '▸';
+  transition: transform 0.15s ease;
+}
+.csv-help[open] > summary::before {
+  transform: rotate(90deg);
+}
+.csv-help[open] > summary {
+  margin-bottom: 8px;
+}
+.csv-help ul {
+  margin: 6px 0;
+  padding-left: 20px;
+  line-height: 1.7;
+}
+.csv-help p {
+  margin: 6px 0;
+}
+
 .tt-scroll {
   overflow-x: auto;
   border: 1px solid var(--line);

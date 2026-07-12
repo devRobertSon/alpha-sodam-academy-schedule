@@ -6,11 +6,17 @@ import {
   Exam,
   ExamKind,
   ExamQuestion,
+  downloadText,
   examQuestionsFromCsv,
   newId,
   resolveCourseName,
   todayStr,
 } from '../../lib/assessment';
+
+// 업로드 예시(양식) — 받아서 내용만 바꿔 다시 올리면 됩니다.
+const SAMPLE_EXAM_CSV = `시험지,수업,과목,문항번호,유형,정답,배점
+중2 1차 진단,진단테스트,과학,1,자료 해석,3,3.5
+중2 1차 진단,진단테스트,과학,2,분석·추론,①,4`;
 
 interface Props {
   data: AssessmentData;
@@ -139,6 +145,7 @@ export default function ExamManager({ data, setData, courses }: Props) {
     <div className="assess-pane">
       <div className="assess-row">
         <button className="primary" onClick={() => fileRef.current?.click()}>＋ CSV 시험지 업로드</button>
+        <button className="ghost" onClick={() => downloadText('시험지_예시.csv', SAMPLE_EXAM_CSV)}>예시 CSV</button>
         <input
           ref={fileRef}
           type="file"
@@ -151,8 +158,23 @@ export default function ExamManager({ data, setData, courses }: Props) {
             e.target.value = '';
           }}
         />
-        <span className="hint">여러 CSV를 한 번에 올릴 수 있습니다. 열: 문항번호·유형(필수), 과목·정답·배점·시험지·수업(선택).</span>
+        <span className="hint">여러 CSV를 한 번에 올릴 수 있습니다. CSV 한 개 = 시험지 한 개.</span>
       </div>
+      <details className="csv-help">
+        <summary>CSV 어떻게 만드나요?</summary>
+        <p>
+          엑셀·구글 시트에서 <b>CSV 한 개 = 시험지 한 개</b>로 만들어 <b>CSV로 저장</b>해 올리거나, <b>[예시 CSV]</b> 버튼으로 양식을 받아 내용만 바꿔 올리세요.
+        </p>
+        <ul>
+          <li><b>문항번호</b> — 1, 2, 3… (필수)</li>
+          <li><b>유형</b> — 문항 유형. 과학은 6종(개념 이해·자료 해석·적용·계산·분석·추론·탐구·실험 설계·비교·분류) (필수)</li>
+          <li><b>시험지</b> — 시험지 이름 (선택, 없으면 파일명 사용)</li>
+          <li><b>수업</b> — 어느 수업의 시험지인지 (선택, 없으면 진단평가는 진단테스트 기본)</li>
+          <li><b>과목·정답·배점</b> — 선택 (배점은 3.5처럼 소수점 가능)</li>
+        </ul>
+        <pre className="manual-code">{SAMPLE_EXAM_CSV}</pre>
+        <p className="muted">열 순서는 무관하고 헤더 이름으로 인식합니다. 파일명에 "단원"이 들어 있으면 단원평가로 자동 인식됩니다(그 외는 진단평가).</p>
+      </details>
 
       {drafts.length > 0 && (
         <div className="assess-card draft">

@@ -1461,23 +1461,10 @@ body {
   letter-spacing: 0.5px;
   margin-bottom: 8px;
 }
-.report-footer-sign {
-  font-size: 13px;
-  color: var(--ink);
-  display: flex;
-  align-items: flex-end;
-  gap: 4px;
-}
-.sign-line {
-  display: inline-block;
-  width: 120px;
-  border-bottom: 1px solid var(--muted);
-  height: 14px;
-}
 .report-footer-date {
   font-size: 12px;
   color: var(--muted);
-  margin-top: 4px;
+  margin-top: 6px;
 }
 .report-footer-seal {
   flex-shrink: 0;

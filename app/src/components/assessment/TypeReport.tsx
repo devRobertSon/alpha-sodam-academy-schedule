@@ -434,7 +434,6 @@ export default function TypeReport({ data }: Props) {
                 <div className="report-footer-left">
                   <div className="report-footer-org">알파학원 교육연구소</div>
                   <div className="report-footer-en">ALPHA ACADEMY · Education Research Institute</div>
-                  <div className="report-footer-sign">담당 선생님 <span className="sign-line" /> (인)</div>
                   <div className="report-footer-date">발행일 {today}</div>
                 </div>
                 <div className="report-footer-seal">

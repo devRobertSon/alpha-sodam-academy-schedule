@@ -1345,13 +1345,18 @@ body {
 .report-capture {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
   background: #fff;
   padding: 4px;
 }
 /* 리포트 1페이지 여유 확보: 카드 여백을 조금 촘촘하게(리포트 전용) */
 .report-capture .assess-card {
-  padding: 11px;
+  padding: 12px;
+}
+/* 응시이력이 10개 초과일 때 한 줄에 2개씩 — 4번째·5번째 열 사이 구분선 */
+.report-capture .assess-table.exam-2col td:nth-child(4),
+.report-capture .assess-table.exam-2col th:nth-child(4) {
+  border-right: 2px solid var(--line);
 }
 .report-cap-head {
   padding: 4px 2px;
@@ -1564,8 +1569,8 @@ body {
 .type-radar-wrap {
   display: flex;
   justify-content: center;
-  margin-top: 8px;
-  padding-top: 8px;
+  margin-top: 10px;
+  padding-top: 10px;
   border-top: 1px solid var(--line);
 }
 .type-radar {

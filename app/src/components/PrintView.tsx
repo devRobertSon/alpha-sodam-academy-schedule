@@ -154,11 +154,14 @@ export default function PrintView({
   today,
 }: Props) {
   const rem = remainingCourses(courses, '공통', atIdx, shifts, includedIds);
-  const endIdx = rem.length ? Math.min(LAST_IDX, Math.max(...rem.map((e) => e.endIdx))) : atIdx;
+  // endIdx(배타적) → 마지막으로 수업이 걸치는 whole month = ceil(endIdx) - 1
+  const endIdx = rem.length
+    ? Math.min(LAST_IDX, Math.ceil(Math.max(...rem.map((e) => e.endIdx))) - 1)
+    : atIdx;
 
   // 현재 달 ~ 마지막 수업 달 중, 실제로 수업이 있는 달만 인쇄
   const months: number[] = [];
-  for (let i = atIdx; i <= endIdx && i <= 59; i++) {
+  for (let i = atIdx; i <= endIdx && i <= LAST_IDX; i++) {
     const { blocks } = buildMonthlyTimetable(courses, '공통', i, shifts, slotOverrides, includedIds);
     if (blocks.length > 0) months.push(i);
   }

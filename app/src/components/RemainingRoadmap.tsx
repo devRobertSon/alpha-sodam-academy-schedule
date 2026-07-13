@@ -72,7 +72,7 @@ export default function RemainingRoadmap({
 
   const levelEnds: number[] = [];
   const placed = rem.map((e) => {
-    let lvl = levelEnds.findIndex((end) => end < e.startIdx);
+    let lvl = levelEnds.findIndex((end) => end <= e.startIdx);
     if (lvl === -1) {
       lvl = levelEnds.length;
       levelEnds.push(e.endIdx);
@@ -102,7 +102,7 @@ export default function RemainingRoadmap({
       const deltaCols = Math.round(dx / COL_W);
       let newShift = d.origShift + deltaCols;
       const minShift = atIdx - d.baseStart;
-      const maxShift = LAST_IDX - d.baseEnd;
+      const maxShift = LAST_IDX + 1 - d.baseEnd;
       if (newShift < minShift) newShift = minShift;
       if (newShift > maxShift) newShift = maxShift;
       onShiftChange(d.id, newShift);
@@ -185,7 +185,7 @@ export default function RemainingRoadmap({
 
       {placed.map((e) => {
         const x = xOf(e.startIdx);
-        const w = (e.endIdx - e.startIdx + 1) * COL_W;
+        const w = (e.endIdx - e.startIdx) * COL_W;
         const y = courseTop + e.level * ROW_H;
         const c = courseColor(e.course.type, e.course.subject);
         const isDragging = drag?.id === e.course.id && drag.moved;

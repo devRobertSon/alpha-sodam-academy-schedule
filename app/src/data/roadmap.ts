@@ -81,6 +81,11 @@ export interface Course {
   end: YM;
   schedule: TimeSlot[];
   teacher?: string;
+  // 선택: 반개월 정밀 배치. 있으면 로드맵/시간표가 이 값을 우선 사용한다.
+  // spanStart = 시작 월 인덱스(소수 허용, 포함), spanMonths = 기간(개월, 소수 허용).
+  // start/end(YM)는 관리 화면 표시·정수 격자 대비용 근사값.
+  spanStart?: number;
+  spanMonths?: number;
 }
 
 const SCIENCE_COURSES: Course[] = [
@@ -112,8 +117,7 @@ const SCIENCE_COURSES: Course[] = [
 
 // ── 수학 교과 — 선행 커리큘럼(초4 3월부터 순서대로 이어 배치) ──
 // 과정별 기간: 초등 2.5개월 · 중등 3.5개월 · 고등 5개월.
-// 타임라인이 한 달 단위 격자라, 누적 반올림으로 정수 월 경계에 맞춘다
-// (초등 3·2개월, 중등 4·3개월이 번갈아 평균이 2.5·3.5가 되고, 고등은 정확히 5개월).
+// spanStart/spanMonths(소수)로 반개월까지 정밀 배치한다.
 const MATH_PLAN: { id: string; name: string; type: CourseType; months: number }[] = [
   { id: 'gyo_math_e4_1', name: '수학 초4-1', type: '초등교과', months: 2.5 },
   { id: 'gyo_math_e4_2', name: '수학 초4-2', type: '초등교과', months: 2.5 },
@@ -139,9 +143,11 @@ const MATH_COURSES: Course[] = (() => {
   const out: Course[] = [];
   let cursor = 0; // 타임라인 시작(초4 3월)부터의 누적 개월(소수 허용)
   for (const m of MATH_PLAN) {
-    const startIdx = Math.round(cursor);
+    const spanStart = cursor;
     cursor += m.months;
-    const endIdx = Math.min(LAST_IDX, Math.max(startIdx, Math.round(cursor) - 1));
+    // 관리 화면 표시용 근사 YM(정수 월). 실제 배치는 spanStart/spanMonths 사용.
+    const startAnchor = Math.min(LAST_IDX, Math.round(spanStart));
+    const endAnchor = Math.min(LAST_IDX, Math.max(startAnchor, Math.ceil(cursor) - 1));
     // 수업 시간: 선행 트랙이라 동시에 하나만 수강 → 같은 슬롯(화 17:00~19:00)
     out.push({
       id: m.id,
@@ -149,8 +155,10 @@ const MATH_COURSES: Course[] = (() => {
       track: '공통',
       subject: '수학',
       type: m.type,
-      start: { grade: gradeOfIndex(startIdx), month: monthOfIndex(startIdx) },
-      end: { grade: gradeOfIndex(endIdx), month: monthOfIndex(endIdx) },
+      start: { grade: gradeOfIndex(startAnchor), month: monthOfIndex(startAnchor) },
+      end: { grade: gradeOfIndex(endAnchor), month: monthOfIndex(endAnchor) },
+      spanStart,
+      spanMonths: m.months,
       schedule: [{ day: '화', start: '17:00', end: '19:00' }],
     });
   }

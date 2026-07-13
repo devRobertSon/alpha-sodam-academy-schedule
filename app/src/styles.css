@@ -1476,10 +1476,10 @@ body {
   object-fit: contain;
 }
 
-/* 리포트 뒤 상담 카드(3개 표) — 리포트와 같은 스타일, A4 한 페이지를 채움 */
+/* 리포트 뒤 상담 카드 — 리포트와 비슷한 여백으로 페이지 대부분을 채우되 하단 여백 확보 */
 .report-append {
   margin-top: 18px;
-  aspect-ratio: 186 / 273; /* A4 본문 영역 비율 → 페이지를 꽉 채움 */
+  aspect-ratio: 186 / 240; /* A4 본문의 약 88% 높이 → 하단에 리포트 1페이지 정도의 여백 */
   display: flex;
   flex-direction: column;
   gap: 14px;
@@ -1487,7 +1487,7 @@ body {
 .report-append > .assess-card {
   margin: 0;
 }
-/* 상담 메모: 남는 공간을 채워 하단 여백 제거 */
+/* 상담 메모: 남는 공간을 채우되 과하지 않게 */
 .rp-memo {
   flex: 1;
   display: flex;
@@ -1495,7 +1495,7 @@ body {
 }
 .rp-memo-box {
   flex: 1;
-  min-height: 120px;
+  min-height: 90px;
   margin-top: 8px;
   border: 1px dashed var(--line);
   border-radius: 8px;

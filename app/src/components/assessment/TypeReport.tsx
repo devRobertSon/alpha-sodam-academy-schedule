@@ -455,8 +455,9 @@ export default function TypeReport({ data }: Props) {
             </div>
           )}
 
-          {/* 뒤 페이지: 상담 카드(목표 고등학교·현재 진도·개인정보 동의서) — 리포트와 같은 스타일 */}
+          {/* 뒤 페이지: 상담 카드 — 화면에는 숨기고(래퍼 클리핑) PDF 출력에만 추가 */}
           {selectedResults.length > 0 && (
+            <div className="report-append-wrap" aria-hidden>
             <div ref={appendRef} className="report-capture report-append">
               <div className="report-letterhead">
                 {logoUrl && <img src={logoUrl} className="report-lh-logo" alt="" />}
@@ -511,6 +512,7 @@ export default function TypeReport({ data }: Props) {
                   <span>알파학원 귀하</span>
                 </div>
               </div>
+            </div>
             </div>
           )}
         </>

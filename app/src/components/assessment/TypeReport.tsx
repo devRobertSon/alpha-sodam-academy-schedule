@@ -3,6 +3,14 @@ import { toJpeg } from 'html-to-image';
 import { AssessmentData, TypeStat, scoreOf, todayStr, typeStatsCumulative } from '../../lib/assessment';
 import { logoUrl, sealUrl } from '../../lib/brand';
 
+// 리포트 PDF 뒤에 붙일 첨부 PDF(있으면). app/src/assets/report-append.pdf
+const appendPdfs = import.meta.glob('../../assets/report-append.pdf', {
+  eager: true,
+  query: '?url',
+  import: 'default',
+});
+const appendPdfUrl = (Object.values(appendPdfs)[0] as string | undefined) ?? null;
+
 // 자동 생성 직인(도장) — assets/brand/seal.* 이미지가 없을 때 사용.
 // 일반 회사·연구소 원형 직인 형태: 기관명이 원을 따라 곡선으로 둘러싸고,
 // 좌우 구분 마름모, 중앙 별, 하단 짧은 라벨.
@@ -275,7 +283,36 @@ export default function TypeReport({ data }: Props) {
         pdf.rect(0, 0, pageW, MARGIN, 'F');
         pdf.rect(0, pageH - MARGIN, pageW, MARGIN, 'F');
       }
-      pdf.save(`리포트_${student.name}_${today}.pdf`);
+      const filename = `리포트_${student.name}_${today}.pdf`;
+
+      // 첨부 PDF가 있으면 리포트 뒤에 병합해서 저장(실패 시 리포트만 저장)
+      let mergedBytes: Uint8Array | null = null;
+      if (appendPdfUrl) {
+        try {
+          const { PDFDocument } = await import('pdf-lib');
+          const merged = await PDFDocument.load(pdf.output('arraybuffer'));
+          const appendBytes = await fetch(appendPdfUrl).then((r) => r.arrayBuffer());
+          const appendDoc = await PDFDocument.load(appendBytes);
+          const copied = await merged.copyPages(appendDoc, appendDoc.getPageIndices());
+          copied.forEach((pg) => merged.addPage(pg));
+          mergedBytes = await merged.save();
+        } catch (mergeErr) {
+          console.error('첨부 PDF 병합 실패 — 리포트만 저장', mergeErr);
+          mergedBytes = null;
+        }
+      }
+
+      if (mergedBytes) {
+        const blob = new Blob([mergedBytes as unknown as BlobPart], { type: 'application/pdf' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        a.click();
+        URL.revokeObjectURL(url);
+      } else {
+        pdf.save(filename);
+      }
     } catch (e) {
       console.error(e);
       alert('PDF 저장에 실패했습니다. 다시 시도해 주세요.');

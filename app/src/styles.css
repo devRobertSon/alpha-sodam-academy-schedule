@@ -1345,9 +1345,18 @@ body {
 .report-capture {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 12px;
   background: #fff;
   padding: 4px;
+}
+/* 리포트 1페이지 여유 확보: 카드 여백을 조금 촘촘하게(리포트 전용) */
+.report-capture .assess-card {
+  padding: 12px;
+}
+/* 응시이력이 10개 초과일 때 한 줄에 2개씩 — 4번째·5번째 열 사이 구분선 */
+.report-capture .assess-table.exam-2col td:nth-child(4),
+.report-capture .assess-table.exam-2col th:nth-child(4) {
+  border-right: 2px solid var(--line);
 }
 .report-cap-head {
   padding: 4px 2px;
@@ -1476,9 +1485,13 @@ body {
   object-fit: contain;
 }
 
-/* 리포트 뒤 상담 카드 — 리포트와 비슷한 여백으로 페이지 대부분을 채우되 하단 여백 확보 */
+/* 리포트 뒤 상담 카드 — 화면에는 숨기고(래퍼 height:0) PDF에만 추가.
+   toJpeg는 대상 요소를 복제해 별도 렌더하므로, 클리핑돼도 캡처는 정상. */
+.report-append-wrap {
+  height: 0;
+  overflow: hidden;
+}
 .report-append {
-  margin-top: 18px;
   aspect-ratio: 186 / 240; /* A4 본문의 약 88% 높이 → 하단에 리포트 1페이지 정도의 여백 */
   display: flex;
   flex-direction: column;
@@ -1556,8 +1569,8 @@ body {
 .type-radar-wrap {
   display: flex;
   justify-content: center;
-  margin-top: 18px;
-  padding-top: 16px;
+  margin-top: 10px;
+  padding-top: 10px;
   border-top: 1px solid var(--line);
 }
 .type-radar {

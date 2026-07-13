@@ -414,25 +414,58 @@ export default function TypeReport({ data }: Props) {
 
               <div className="assess-card">
                 <h3>응시 이력 (선택한 시험)</h3>
-                <table className="assess-table">
-                  <thead>
-                    <tr><th>시험지</th><th>종류</th><th>응시일</th><th>정답률</th></tr>
-                  </thead>
-                  <tbody>
-                    {selectedResults.map((r) => {
-                      const ex = examById.get(r.examId);
-                      const sc = scoreOf(r.marks);
-                      return (
-                        <tr key={r.id}>
-                          <td>{ex?.title ?? '—'}</td>
-                          <td>{ex?.kind ?? ''}평가</td>
-                          <td>{r.date}</td>
-                          <td>{sc.correct}/{sc.total} · {Math.round(sc.rate * 100)}%</td>
+                {(() => {
+                  // 응시이력이 10개를 넘으면 한 줄에 2개씩 배치해 세로 길이를 절반으로 줄임
+                  const twoCol = selectedResults.length > 10;
+                  const cells = (r: (typeof selectedResults)[number]) => {
+                    const ex = examById.get(r.examId);
+                    const sc = scoreOf(r.marks);
+                    return (
+                      <>
+                        <td>{ex?.title ?? '—'}</td>
+                        <td>{ex?.kind ?? ''}평가</td>
+                        <td>{r.date}</td>
+                        <td>{sc.correct}/{sc.total} · {Math.round(sc.rate * 100)}%</td>
+                      </>
+                    );
+                  };
+                  if (!twoCol) {
+                    return (
+                      <table className="assess-table">
+                        <thead>
+                          <tr><th>시험지</th><th>종류</th><th>응시일</th><th>정답률</th></tr>
+                        </thead>
+                        <tbody>
+                          {selectedResults.map((r) => <tr key={r.id}>{cells(r)}</tr>)}
+                        </tbody>
+                      </table>
+                    );
+                  }
+                  const half = Math.ceil(selectedResults.length / 2);
+                  const left = selectedResults.slice(0, half);
+                  const right = selectedResults.slice(half);
+                  return (
+                    <table className="assess-table exam-2col">
+                      <thead>
+                        <tr>
+                          <th>시험지</th><th>종류</th><th>응시일</th><th>정답률</th>
+                          <th>시험지</th><th>종류</th><th>응시일</th><th>정답률</th>
                         </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
+                      </thead>
+                      <tbody>
+                        {left.map((r, i) => {
+                          const rr = right[i];
+                          return (
+                            <tr key={r.id}>
+                              {cells(r)}
+                              {rr ? cells(rr) : <><td /><td /><td /><td /></>}
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  );
+                })()}
               </div>
 
               {note.trim() && (
@@ -455,8 +488,9 @@ export default function TypeReport({ data }: Props) {
             </div>
           )}
 
-          {/* 뒤 페이지: 상담 카드(목표 고등학교·현재 진도·개인정보 동의서) — 리포트와 같은 스타일 */}
+          {/* 뒤 페이지: 상담 카드 — 화면에는 숨기고(래퍼 클리핑) PDF 출력에만 추가 */}
           {selectedResults.length > 0 && (
+            <div className="report-append-wrap" aria-hidden>
             <div ref={appendRef} className="report-capture report-append">
               <div className="report-letterhead">
                 {logoUrl && <img src={logoUrl} className="report-lh-logo" alt="" />}
@@ -511,6 +545,7 @@ export default function TypeReport({ data }: Props) {
                   <span>알파학원 귀하</span>
                 </div>
               </div>
+            </div>
             </div>
           )}
         </>

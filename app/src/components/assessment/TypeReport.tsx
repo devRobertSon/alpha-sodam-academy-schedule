@@ -1,6 +1,23 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { toJpeg } from 'html-to-image';
 import { AssessmentData, TypeStat, scoreOf, todayStr, typeStatsCumulative } from '../../lib/assessment';
+import { logoUrl, sealUrl } from '../../lib/brand';
+
+// 자동 생성 직인(도장) — assets/brand/seal.* 이미지가 없을 때 사용
+function SealStamp() {
+  return (
+    <svg viewBox="0 0 130 130" className="report-seal-svg" role="img" aria-label="알파학원 교육연구소 직인">
+      <g transform="rotate(-6 65 65)">
+        <circle cx="65" cy="65" r="60" fill="rgba(192,57,43,0.05)" stroke="#C0392B" strokeWidth="3.5" />
+        <circle cx="65" cy="65" r="50" fill="none" stroke="#C0392B" strokeWidth="1.2" />
+        <text x="65" y="33" textAnchor="middle" fontSize="12" fill="#C0392B" fontWeight="700">★</text>
+        <text x="65" y="61" textAnchor="middle" fontSize="19" fill="#C0392B" fontWeight="800" letterSpacing="2">알파학원</text>
+        <text x="65" y="83" textAnchor="middle" fontSize="12.5" fill="#C0392B" fontWeight="700" letterSpacing="3">교육연구소</text>
+        <text x="65" y="104" textAnchor="middle" fontSize="11" fill="#C0392B" fontWeight="700">認</text>
+      </g>
+    </svg>
+  );
+}
 
 interface Props {
   data: AssessmentData;
@@ -320,14 +337,30 @@ export default function TypeReport({ data, setData }: Props) {
             <p className="muted">시험을 하나 이상 선택하세요.</p>
           ) : (
             <div ref={captureRef} className="report-capture">
-              <div className="report-cap-head">
-                <div className="report-cap-title">{student?.name} 학생 · 유형별 평가 리포트</div>
-                <div className="report-cap-sub">
-                  {student?.grade} · 생성일 {today}
-                  {(fromDate || toDate) && ` · 기간 ${fromDate || '처음'} ~ ${toDate || '끝'}`}
-                  {' · '}대상 시험 {selectedResults.length}개
+              <div className="report-letterhead">
+                {logoUrl && <img src={logoUrl} className="report-lh-logo" alt="" />}
+                <div className="report-lh-text">
+                  <div className="report-lh-org">알파학원 교육연구소</div>
+                  <div className="report-lh-title">학생 개별 평가 리포트</div>
                 </div>
               </div>
+
+              <table className="report-info-table">
+                <tbody>
+                  <tr>
+                    <th>학생</th><td>{student?.name}</td>
+                    <th>학년</th><td>{student?.grade}</td>
+                  </tr>
+                  <tr>
+                    <th>학교</th><td>{student?.school || '—'}</td>
+                    <th>발행일</th><td>{today}</td>
+                  </tr>
+                  <tr>
+                    <th>대상 기간</th><td>{fromDate || toDate ? `${fromDate || '처음'} ~ ${toDate || '끝'}` : '전체'}</td>
+                    <th>대상 시험</th><td>{selectedResults.length}개</td>
+                  </tr>
+                </tbody>
+              </table>
 
               <div className="assess-card">
                 <h3>유형별 정답률</h3>
@@ -377,6 +410,18 @@ export default function TypeReport({ data, setData }: Props) {
                   <div className="report-note-body">{note}</div>
                 </div>
               )}
+
+              <div className="report-footer">
+                <div className="report-footer-left">
+                  <div className="report-footer-org">알파학원 교육연구소</div>
+                  <div className="report-footer-en">ALPHA ACADEMY · Education Research Institute</div>
+                  <div className="report-footer-sign">담당 선생님 <span className="sign-line" /> (인)</div>
+                  <div className="report-footer-date">발행일 {today}</div>
+                </div>
+                <div className="report-footer-seal">
+                  {sealUrl ? <img src={sealUrl} className="report-seal-img" alt="직인" /> : <SealStamp />}
+                </div>
+              </div>
             </div>
           )}
         </>

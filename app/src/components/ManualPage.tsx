@@ -251,6 +251,7 @@ export default function ManualPage({ onHome }: { onHome: () => void }) {
             <ul>
               <li><b>리포트에 포함할 시험</b>에서 학생이 본 시험을 <b>골라</b> 그 시험들만으로 리포트를 만들 수 있습니다. (전체 선택/해제)</li>
               <li><b>기간으로 선택</b> — 시작·종료 날짜를 정하면 그 기간에 응시한 시험이 자동으로 선택됩니다. (이후 개별 체크로 조정 가능)</li>
+              <li><b>✍ 선생님 종합 의견 · 추천 수업</b> — 상담 결과·추천 수업 등을 직접 적으면 <b>리포트와 PDF에 함께 출력</b>됩니다. 학생별로 자동 저장됩니다.</li>
               <li><b>📄 리포트 PDF 저장</b> 버튼으로 리포트를 PDF 파일로 내려받아 학부모님께 전달할 수 있습니다.</li>
               <li>정답률 색: <span className="manual-dot" style={{ background: '#2C79D0' }} /> 80% 이상 ·{' '}
                 <span className="manual-dot" style={{ background: '#E3A72E' }} /> 50~79% ·{' '}

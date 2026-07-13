@@ -4,6 +4,7 @@ import { AssessmentData, TypeStat, scoreOf, todayStr, typeStatsCumulative } from
 
 interface Props {
   data: AssessmentData;
+  setData: (d: AssessmentData) => void;
 }
 
 // 이 문제 수 이상인 유형만 차트(막대·레이더)에 표시. 그 미만은 아래 비고 표로.
@@ -147,7 +148,7 @@ function TypeRadar({ stats }: { stats: TypeStat[] }) {
   );
 }
 
-export default function TypeReport({ data }: Props) {
+export default function TypeReport({ data, setData }: Props) {
   const [studentId, setStudentId] = useState('');
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [fromDate, setFromDate] = useState('');
@@ -156,6 +157,14 @@ export default function TypeReport({ data }: Props) {
   const captureRef = useRef<HTMLDivElement>(null);
 
   const student = data.students.find((s) => s.id === studentId);
+  const note = student?.reportNote ?? '';
+  const setNote = (text: string) => {
+    if (!student) return;
+    setData({
+      ...data,
+      students: data.students.map((s) => (s.id === student.id ? { ...s, reportNote: text } : s)),
+    });
+  };
   const examById = useMemo(() => new Map(data.exams.map((e) => [e.id, e])), [data.exams]);
 
   const studentResults = useMemo(
@@ -295,6 +304,18 @@ export default function TypeReport({ data }: Props) {
             </div>
           </div>
 
+          <div className="assess-card no-print report-note-edit">
+            <h3>✍ 선생님 종합 의견 · 추천 수업</h3>
+            <p className="muted">상담 결과, 추천 수업 등을 적으면 아래 리포트와 <b>PDF 출력에 함께</b> 나옵니다. (학생별로 자동 저장)</p>
+            <textarea
+              className="report-note-input"
+              rows={5}
+              placeholder="예) 자료 해석·분석 추론 유형이 약해 원자료 해석 훈련이 필요합니다. 다음 학기에는 '수학 중2-1'과 '과학 중2-1' 수강을 추천합니다."
+              value={note}
+              onChange={(e) => setNote(e.target.value)}
+            />
+          </div>
+
           {selectedResults.length === 0 ? (
             <p className="muted">시험을 하나 이상 선택하세요.</p>
           ) : (
@@ -349,6 +370,13 @@ export default function TypeReport({ data }: Props) {
                   </tbody>
                 </table>
               </div>
+
+              {note.trim() && (
+                <div className="assess-card report-note-print">
+                  <h3>선생님 종합 의견 · 추천 수업</h3>
+                  <div className="report-note-body">{note}</div>
+                </div>
+              )}
             </div>
           )}
         </>

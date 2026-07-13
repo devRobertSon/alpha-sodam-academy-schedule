@@ -294,7 +294,13 @@ export default function TypeReport({ data }: Props) {
           const appendBytes = await fetch(appendPdfUrl).then((r) => r.arrayBuffer());
           const appendDoc = await PDFDocument.load(appendBytes);
           const copied = await merged.copyPages(appendDoc, appendDoc.getPageIndices());
-          copied.forEach((pg) => merged.addPage(pg));
+          copied.forEach((pg) => {
+            // 신입생 상담원서에서 하단 3개 표(목표 고등학교·현재 진도·개인정보 수집·이용 동의서)만
+            // 남기고 크롭. 좌표는 해당 PDF 레이아웃 기준(원본 595.9×842.9pt, 원점 좌하단).
+            pg.setMediaBox(0, 320, 595.9, 279);
+            pg.setCropBox(0, 320, 595.9, 279);
+            merged.addPage(pg);
+          });
           mergedBytes = await merged.save();
         } catch (mergeErr) {
           console.error('첨부 PDF 병합 실패 — 리포트만 저장', mergeErr);

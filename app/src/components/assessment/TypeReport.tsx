@@ -101,8 +101,8 @@ function TypeBars({ stats }: { stats: TypeStat[] }) {
 }
 
 const RADAR_W = 480;
-const RADAR_H = 390;
-const RADAR_R = 128;
+const RADAR_H = 330;
+const RADAR_R = 112;
 
 function TypeRadar({ stats }: { stats: TypeStat[] }) {
   if (stats.length < 3) {

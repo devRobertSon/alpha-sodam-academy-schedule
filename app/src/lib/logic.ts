@@ -11,16 +11,21 @@ export function nowIndex(grade: Grade, month: number): number {
   return gmIndex(grade, month);
 }
 
+// startIdx = 시작 월 인덱스(포함), endIdx = 끝 월 인덱스(배타적 = 시작 + 기간).
+// 반개월 정밀 배치(spanStart/spanMonths)가 있으면 그 값을, 없으면 정수 YM을 사용.
 export function shiftedRange(course: Course, shift = 0): { startIdx: number; endIdx: number } {
+  if (course.spanStart != null && course.spanMonths != null) {
+    return { startIdx: course.spanStart + shift, endIdx: course.spanStart + course.spanMonths + shift };
+  }
   return {
     startIdx: gmIndex(course.start.grade, course.start.month) + shift,
-    endIdx: gmIndex(course.end.grade, course.end.month) + shift,
+    endIdx: gmIndex(course.end.grade, course.end.month) + 1 + shift,
   };
 }
 
 export function statusFromIdx(startIdx: number, endIdx: number, atIdx: number): Status {
   if (atIdx < startIdx) return '예정';
-  if (atIdx > endIdx) return '완료';
+  if (atIdx >= endIdx) return '완료';
   return '진행중';
 }
 
@@ -112,7 +117,8 @@ export function buildMonthlyTimetable(
     if (includedIds && !includedIds.has(c.id)) continue;
     const shift = shifts[c.id] ?? 0;
     const { startIdx, endIdx } = shiftedRange(c, shift);
-    if (viewIdx < startIdx || viewIdx > endIdx) continue;
+    // 그 달 [viewIdx, viewIdx+1)과 과정 구간 [startIdx, endIdx)가 겹치면 표시
+    if (viewIdx + 1 <= startIdx || viewIdx >= endIdx) continue;
     c.schedule.forEach((base, i) => {
       const key = sessionKey(c.id, i);
       const slot = slotOverrides[key] ?? base;

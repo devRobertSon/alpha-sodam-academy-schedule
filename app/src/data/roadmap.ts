@@ -81,6 +81,11 @@ export interface Course {
   end: YM;
   schedule: TimeSlot[];
   teacher?: string;
+  // 선택: 반개월 정밀 배치. 있으면 로드맵/시간표가 이 값을 우선 사용한다.
+  // spanStart = 시작 월 인덱스(소수 허용, 포함), spanMonths = 기간(개월, 소수 허용).
+  // start/end(YM)는 관리 화면 표시·정수 격자 대비용 근사값.
+  spanStart?: number;
+  spanMonths?: number;
 }
 
 const SCIENCE_COURSES: Course[] = [
@@ -110,48 +115,57 @@ const SCIENCE_COURSES: Course[] = [
     start: { grade: '중3', month: 6 }, end: { grade: '중3', month: 8 }, schedule: [{ day: '토', start: '16:10', end: '18:40' }] },
 ];
 
-// ── 수학 교과 (학기별: 초4-1 ~ 중3-2) ──
-// 각 학기를 해당 학년의 실제 학기 위치에 배치(1학기=봄 3~8월, 2학기=가을·겨울 9~2월).
-const MATH_SEMESTER_GRADES: { grade: Grade; type: CourseType }[] = [
-  { grade: '초4', type: '초등교과' },
-  { grade: '초5', type: '초등교과' },
-  { grade: '초6', type: '초등교과' },
-  { grade: '중1', type: '중등교과' },
-  { grade: '중2', type: '중등교과' },
-  { grade: '중3', type: '중등교과' },
+// ── 수학 교과 — 선행 커리큘럼(초4 3월부터 순서대로 이어 배치) ──
+// 과정별 기간: 초등 2.5개월 · 중등 3.5개월 · 고등 5개월.
+// spanStart/spanMonths(소수)로 반개월까지 정밀 배치한다.
+const MATH_PLAN: { id: string; name: string; type: CourseType; months: number }[] = [
+  { id: 'gyo_math_e4_1', name: '수학 초4-1', type: '초등교과', months: 2.5 },
+  { id: 'gyo_math_e4_2', name: '수학 초4-2', type: '초등교과', months: 2.5 },
+  { id: 'gyo_math_e5_1', name: '수학 초5-1', type: '초등교과', months: 2.5 },
+  { id: 'gyo_math_e5_2', name: '수학 초5-2', type: '초등교과', months: 2.5 },
+  { id: 'gyo_math_e6_1', name: '수학 초6-1', type: '초등교과', months: 2.5 },
+  { id: 'gyo_math_e6_2', name: '수학 초6-2', type: '초등교과', months: 2.5 },
+  { id: 'gyo_math_m1_1', name: '수학 중1-1', type: '중등교과', months: 3.5 },
+  { id: 'gyo_math_m1_2', name: '수학 중1-2', type: '중등교과', months: 3.5 },
+  { id: 'gyo_math_m2_1', name: '수학 중2-1', type: '중등교과', months: 3.5 },
+  { id: 'gyo_math_m2_2', name: '수학 중2-2', type: '중등교과', months: 3.5 },
+  { id: 'gyo_math_m3_1', name: '수학 중3-1', type: '중등교과', months: 3.5 },
+  { id: 'gyo_math_m3_2', name: '수학 중3-2', type: '중등교과', months: 3.5 },
+  { id: 'gyo_math_h_common1', name: '공통수학1', type: '고등교과', months: 5 },
+  { id: 'gyo_math_h_common2', name: '공통수학2', type: '고등교과', months: 5 },
+  { id: 'gyo_math_h_algebra', name: '대수', type: '고등교과', months: 5 },
+  { id: 'gyo_math_h_calculus', name: '미적분', type: '고등교과', months: 5 },
+  { id: 'gyo_math_h_geometry', name: '기하', type: '고등교과', months: 5 },
+  { id: 'gyo_math_h_prob', name: '확률과통계', type: '고등교과', months: 5 },
 ];
-const MATH_SEMESTER_COURSES: Course[] = MATH_SEMESTER_GRADES.flatMap(({ grade, type }) => {
-  const slug = grade.replace('초', 'e').replace('중', 'm');
-  return [1, 2].map<Course>((sem) => ({
-    id: `gyo_math_${slug}_${sem}`,
-    name: `수학 ${grade}-${sem}`,
-    track: '공통',
-    subject: '수학',
-    type,
-    start: { grade, month: sem === 1 ? 3 : 9 },
-    end: { grade, month: sem === 1 ? 8 : 2 },
-    schedule: [{ day: '화', start: '17:00', end: '18:30' }],
-  }));
-});
 
-// ── 수학 교과 (고등: 교과목 이름) — 중등 후반에 가속 배치, 목요일 ──
-const MATH_HIGH_COURSES: Course[] = [
-  { id: 'gyo_math_h_common1', name: '공통수학1', track: '공통', subject: '수학', type: '고등교과',
-    start: { grade: '중2', month: 9 }, end: { grade: '중2', month: 11 }, schedule: [{ day: '목', start: '17:00', end: '19:30' }] },
-  { id: 'gyo_math_h_common2', name: '공통수학2', track: '공통', subject: '수학', type: '고등교과',
-    start: { grade: '중2', month: 12 }, end: { grade: '중2', month: 2 }, schedule: [{ day: '목', start: '17:00', end: '19:30' }] },
-  { id: 'gyo_math_h_algebra', name: '대수', track: '공통', subject: '수학', type: '고등교과',
-    start: { grade: '중3', month: 3 }, end: { grade: '중3', month: 5 }, schedule: [{ day: '목', start: '17:00', end: '19:30' }] },
-  { id: 'gyo_math_h_calculus', name: '미적분', track: '공통', subject: '수학', type: '고등교과',
-    start: { grade: '중3', month: 6 }, end: { grade: '중3', month: 8 }, schedule: [{ day: '목', start: '17:00', end: '19:30' }] },
-  { id: 'gyo_math_h_geometry', name: '기하', track: '공통', subject: '수학', type: '고등교과',
-    start: { grade: '중3', month: 9 }, end: { grade: '중3', month: 11 }, schedule: [{ day: '목', start: '17:00', end: '19:30' }] },
-  { id: 'gyo_math_h_prob', name: '확률과통계', track: '공통', subject: '수학', type: '고등교과',
-    start: { grade: '중3', month: 12 }, end: { grade: '중3', month: 2 }, schedule: [{ day: '목', start: '17:00', end: '19:30' }] },
-];
+const MATH_COURSES: Course[] = (() => {
+  const out: Course[] = [];
+  let cursor = 0; // 타임라인 시작(초4 3월)부터의 누적 개월(소수 허용)
+  for (const m of MATH_PLAN) {
+    const spanStart = cursor;
+    cursor += m.months;
+    // 관리 화면 표시용 근사 YM(정수 월). 실제 배치는 spanStart/spanMonths 사용.
+    const startAnchor = Math.min(LAST_IDX, Math.round(spanStart));
+    const endAnchor = Math.min(LAST_IDX, Math.max(startAnchor, Math.ceil(cursor) - 1));
+    // 수업 시간: 선행 트랙이라 동시에 하나만 수강 → 같은 슬롯(화 17:00~19:00)
+    out.push({
+      id: m.id,
+      name: m.name,
+      track: '공통',
+      subject: '수학',
+      type: m.type,
+      start: { grade: gradeOfIndex(startAnchor), month: monthOfIndex(startAnchor) },
+      end: { grade: gradeOfIndex(endAnchor), month: monthOfIndex(endAnchor) },
+      spanStart,
+      spanMonths: m.months,
+      schedule: [{ day: '화', start: '17:00', end: '19:00' }],
+    });
+  }
+  return out;
+})();
 
 export const TRACK_COURSES: Course[] = [
   ...SCIENCE_COURSES,
-  ...MATH_SEMESTER_COURSES,
-  ...MATH_HIGH_COURSES,
+  ...MATH_COURSES,
 ];

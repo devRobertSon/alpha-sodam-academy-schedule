@@ -10,6 +10,9 @@ import {
   Track,
   TRACKS,
   Weekday,
+  gmIndex,
+  gradeOfIndex,
+  monthOfIndex,
 } from '../data/roadmap';
 import {
   StoreData,
@@ -24,6 +27,17 @@ const TRACK_OPTIONS: Track[] = [...TRACKS];
 const DAYS: Weekday[] = ['월', '화', '수', '목', '금', '토', '일'];
 const MONTHS = [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 1, 2];
 
+// 과정의 시작·끝(배타적) 월 인덱스(소수 허용). span 필드가 있으면 그걸, 없으면 YM으로.
+function spanOf(c: Course): { startIdx: number; endIdx: number } {
+  const startIdx = c.spanStart != null ? c.spanStart : gmIndex(c.start.grade, c.start.month);
+  const endIdx =
+    c.spanStart != null && c.spanMonths != null
+      ? c.spanStart + c.spanMonths
+      : gmIndex(c.end.grade, c.end.month) + 1;
+  return { startIdx, endIdx };
+}
+const isHalf = (x: number) => Math.abs(x - Math.floor(x) - 0.5) < 1e-6;
+
 interface Props {
   store: StoreData;
   onChange: (next: StoreData) => void;
@@ -36,6 +50,20 @@ export default function AdminPage({ store, onChange }: Props) {
 
   const updateCourse = (id: string, patch: Partial<Course>) =>
     onChange({ ...store, courses: store.courses.map((c) => (c.id === id ? { ...c, ...patch } : c)) });
+
+  // 시작 월(정수 인덱스)·시작 반개월·끝 월(정수 인덱스)·끝 반개월 → span 필드로 반영
+  // 끝 반개월 = 그 달 중순(＋0.5)에 종료. 반개월이 없으면 기존과 동일한 온전한 월 단위.
+  const applySpan = (c: Course, sMonthIdx: number, sHalf: boolean, eMonthIdx: number, eHalf: boolean) => {
+    const spanStart = sMonthIdx + (sHalf ? 0.5 : 0);
+    let spanEnd = eMonthIdx + (eHalf ? 0.5 : 1);
+    if (spanEnd - spanStart < 0.5) spanEnd = spanStart + 0.5;
+    updateCourse(c.id, {
+      start: { grade: gradeOfIndex(sMonthIdx), month: monthOfIndex(sMonthIdx) },
+      end: { grade: gradeOfIndex(eMonthIdx), month: monthOfIndex(eMonthIdx) },
+      spanStart,
+      spanMonths: spanEnd - spanStart,
+    });
+  };
 
   const updateSession = (
     id: string,
@@ -177,8 +205,8 @@ export default function AdminPage({ store, onChange }: Props) {
               <th>트랙</th>
               <th>과목</th>
               <th>유형</th>
-              <th>시작</th>
-              <th>종료</th>
+              <th title="½ 체크 = 그 달 중순(＋0.5개월)부터 시작">시작 <span className="th-hint">½</span></th>
+              <th title="½ 체크 = 그 달 중순(＋0.5개월)에 종료">종료 <span className="th-hint">½</span></th>
               <th>수업 (요일·시간 · 주 N회)</th>
               <th>담당쌤</th>
               <th></th>
@@ -187,6 +215,15 @@ export default function AdminPage({ store, onChange }: Props) {
           <tbody>
             {filteredCourses.map((c) => {
               const color = COLORS[c.subject] ?? { fill: '#D3D1C7' };
+              const span = spanOf(c);
+              const sMonthIdx = Math.floor(span.startIdx);
+              const sHalf = isHalf(span.startIdx);
+              const eMonthIdx = Math.ceil(span.endIdx) - 1;
+              const eHalf = isHalf(span.endIdx);
+              const sGrade = gradeOfIndex(sMonthIdx);
+              const sMonth = monthOfIndex(sMonthIdx);
+              const eGrade = gradeOfIndex(eMonthIdx);
+              const eMonth = monthOfIndex(eMonthIdx);
               return (
                 <tr key={c.id} style={{ opacity: includedSet.has(c.id) ? 1 : 0.5 }}>
                   <td style={{ textAlign: 'center' }}>
@@ -225,20 +262,26 @@ export default function AdminPage({ store, onChange }: Props) {
                     </select>
                   </td>
                   <td className="ym">
-                    <select value={c.start.grade} onChange={(e) => updateCourse(c.id, { start: { ...c.start, grade: e.target.value as Grade } })}>
+                    <select value={sGrade} onChange={(e) => applySpan(c, gmIndex(e.target.value as Grade, sMonth), sHalf, eMonthIdx, eHalf)}>
                       {GRADES.map((g) => (<option key={g} value={g}>{g}</option>))}
                     </select>
-                    <select value={c.start.month} onChange={(e) => updateCourse(c.id, { start: { ...c.start, month: Number(e.target.value) } })}>
+                    <select value={sMonth} onChange={(e) => applySpan(c, gmIndex(sGrade, Number(e.target.value)), sHalf, eMonthIdx, eHalf)}>
                       {MONTHS.map((m) => (<option key={m} value={m}>{m}월</option>))}
                     </select>
+                    <label className="half-toggle" title="이 달 중순(＋0.5개월)부터 시작">
+                      <input type="checkbox" checked={sHalf} onChange={(e) => applySpan(c, sMonthIdx, e.target.checked, eMonthIdx, eHalf)} />½
+                    </label>
                   </td>
                   <td className="ym">
-                    <select value={c.end.grade} onChange={(e) => updateCourse(c.id, { end: { ...c.end, grade: e.target.value as Grade } })}>
+                    <select value={eGrade} onChange={(e) => applySpan(c, sMonthIdx, sHalf, gmIndex(e.target.value as Grade, eMonth), eHalf)}>
                       {GRADES.map((g) => (<option key={g} value={g}>{g}</option>))}
                     </select>
-                    <select value={c.end.month} onChange={(e) => updateCourse(c.id, { end: { ...c.end, month: Number(e.target.value) } })}>
+                    <select value={eMonth} onChange={(e) => applySpan(c, sMonthIdx, sHalf, gmIndex(eGrade, Number(e.target.value)), eHalf)}>
                       {MONTHS.map((m) => (<option key={m} value={m}>{m}월</option>))}
                     </select>
+                    <label className="half-toggle" title="이 달 중순(＋0.5개월)에 종료(반개월 짧게)">
+                      <input type="checkbox" checked={eHalf} onChange={(e) => applySpan(c, sMonthIdx, sHalf, eMonthIdx, e.target.checked)} />½
+                    </label>
                   </td>
                   <td>
                     <div className="sessions">

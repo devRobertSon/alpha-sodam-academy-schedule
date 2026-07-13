@@ -99,7 +99,8 @@ export default function RemainingRoadmap({
         dragRef.current = { ...d, moved: true };
         setDrag((prev) => prev ? { ...prev, moved: true } : null);
       }
-      const deltaCols = Math.round(dx / COL_W);
+      // 0.5개월(반 칸) 단위로 스냅
+      const deltaCols = Math.round((dx / COL_W) * 2) / 2;
       let newShift = d.origShift + deltaCols;
       const minShift = atIdx - d.baseStart;
       const maxShift = LAST_IDX + 1 - d.baseEnd;

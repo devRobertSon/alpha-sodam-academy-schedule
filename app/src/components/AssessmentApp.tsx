@@ -79,7 +79,7 @@ export default function AssessmentApp({ onHome }: { onHome: () => void }) {
         {tab === 'students' && <StudentManager data={data} setData={setData} courses={courses} />}
         {tab === 'exams' && <ExamManager data={data} setData={setData} courses={courses} />}
         {tab === 'grading' && <GradingPanel data={data} setData={setData} courses={courses} />}
-        {tab === 'report' && <TypeReport data={data} />}
+        {tab === 'report' && <TypeReport data={data} setData={setData} />}
       </section>
     </div>
   );

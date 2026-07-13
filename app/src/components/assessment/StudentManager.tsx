@@ -64,6 +64,8 @@ export default function StudentManager({ data, setData, courses }: Props) {
             <tr>
               <th>이름</th>
               <th>학년</th>
+              <th>학교</th>
+              <th>연락처</th>
               <th>듣는 수업</th>
               <th>메모</th>
               <th>채점</th>
@@ -86,6 +88,12 @@ export default function StudentManager({ data, setData, courses }: Props) {
                       </select>
                     </td>
                     <td>
+                      <input value={s.school ?? ''} placeholder="(선택)" onChange={(e) => update(s.id, { school: e.target.value })} />
+                    </td>
+                    <td>
+                      <input value={s.contact ?? ''} placeholder="(선택)" onChange={(e) => update(s.id, { contact: e.target.value })} />
+                    </td>
+                    <td>
                       <button className="mini" onClick={() => setOpenId(openId === s.id ? null : s.id)}>
                         {enrolled.length ? `${enrolled.length}개 수업` : '수업 선택'} {openId === s.id ? '▲' : '▾'}
                       </button>
@@ -105,7 +113,7 @@ export default function StudentManager({ data, setData, courses }: Props) {
                   </tr>
                   {openId === s.id && (
                     <tr>
-                      <td colSpan={6}>
+                      <td colSpan={8}>
                         <div className="course-picker-row">
                           <span className="hint">듣는 수업을 선택하세요(여러 개 가능) · 입시 상담 로드맵의 과정 목록</span>
                           <div className="course-chips">

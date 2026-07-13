@@ -4,6 +4,8 @@ export interface ConsultInfo {
   studentName: string;
   grade: Grade;
   month: number;
+  school: string;
+  contact: string;
 }
 
 interface Props {
@@ -26,6 +28,28 @@ export default function ConsultForm({ value, onChange }: Props) {
           placeholder="(선택)"
           value={value.studentName}
           onChange={(e) => set({ studentName: e.target.value })}
+        />
+      </div>
+
+      <div className="field">
+        <label htmlFor="school">학교</label>
+        <input
+          id="school"
+          type="text"
+          placeholder="(선택)"
+          value={value.school}
+          onChange={(e) => set({ school: e.target.value })}
+        />
+      </div>
+
+      <div className="field">
+        <label htmlFor="contact">연락처</label>
+        <input
+          id="contact"
+          type="text"
+          placeholder="(선택)"
+          value={value.contact}
+          onChange={(e) => set({ contact: e.target.value })}
         />
       </div>
 

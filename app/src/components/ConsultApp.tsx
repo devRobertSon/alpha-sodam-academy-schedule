@@ -19,6 +19,8 @@ const DEFAULT_CONSULT: ConsultInfo = {
   studentName: '',
   grade: '중1',
   month: 6,
+  school: '',
+  contact: '',
 };
 
 export default function ConsultApp({ onHome }: { onHome: () => void }) {
@@ -62,7 +64,13 @@ export default function ConsultApp({ onHome }: { onHome: () => void }) {
     if (!s) return;
     setCurrentStudentId(id);
     const grade = (GRADES as string[]).includes(s.grade) ? (s.grade as Grade) : DEFAULT_CONSULT.grade;
-    setInfo({ studentName: s.name, grade, month: s.consult?.month ?? DEFAULT_CONSULT.month });
+    setInfo({
+      studentName: s.name,
+      grade,
+      month: s.consult?.month ?? DEFAULT_CONSULT.month,
+      school: s.school ?? '',
+      contact: s.contact ?? '',
+    });
     setIncludedList(s.consult?.includedIds ?? s.courseIds ?? store.includedIds);
     setShifts(s.consult?.shifts ?? {});
     setSlotOverrides(s.consult?.slotOverrides ?? {});
@@ -77,13 +85,15 @@ export default function ConsultApp({ onHome }: { onHome: () => void }) {
     }
     const plan = { month: info.month, includedIds: includedList, shifts, slotOverrides };
     const courseIds = includedList.slice();
+    const school = info.school.trim() || undefined;
+    const contact = info.contact.trim() || undefined;
     const students = assess.students.slice();
     const idx = currentStudentId ? students.findIndex((s) => s.id === currentStudentId) : -1;
     if (idx >= 0) {
-      students[idx] = { ...students[idx], name, grade: info.grade, courseIds, consult: plan };
+      students[idx] = { ...students[idx], name, grade: info.grade, school, contact, courseIds, consult: plan };
     } else {
       const id = newId('stu');
-      students.push({ id, name, grade: info.grade, courseIds, consult: plan });
+      students.push({ id, name, grade: info.grade, school, contact, courseIds, consult: plan });
       setCurrentStudentId(id);
     }
     setAssess({ ...assess, students });
@@ -129,7 +139,9 @@ export default function ConsultApp({ onHome }: { onHome: () => void }) {
                 <select value={currentStudentId ?? ''} onChange={(e) => selectStudent(e.target.value)}>
                   <option value="">+ 새 학생</option>
                   {assess.students.map((s) => (
-                    <option key={s.id} value={s.id}>{s.name} ({s.grade})</option>
+                    <option key={s.id} value={s.id}>
+                      {s.name} ({[s.grade, s.school, s.contact].filter(Boolean).join(' · ')})
+                    </option>
                   ))}
                 </select>
               </label>

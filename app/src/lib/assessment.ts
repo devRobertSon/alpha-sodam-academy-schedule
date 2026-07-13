@@ -56,6 +56,8 @@ export interface Student {
   id: string;
   name: string;
   grade: string;
+  school?: string; // 학교(동명이인 구분용, 선택)
+  contact?: string; // 연락처(동명이인 구분용, 선택)
   memo?: string;
   courseIds?: string[]; // 학생이 듣는 수업들
   consult?: ConsultPlan; // 상담 로드맵에서 저장한 시간표(불러오기용)

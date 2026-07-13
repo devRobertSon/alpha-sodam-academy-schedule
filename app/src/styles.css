@@ -410,16 +410,21 @@ body {
 }
 
 /* 상담: 학생 저장/불러오기 바 + 과목 추가 */
-.consult-student-bar,
+.consult-student-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  padding-bottom: 14px;
+  margin-bottom: 16px;
+  border-bottom: 1px solid var(--line);
+}
 .add-course-row {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 10px;
-  margin-bottom: 12px;
-}
-.add-course-row {
-  margin: 10px 0 0;
+  margin: 12px 0 0;
 }
 .field-inline {
   display: inline-flex;
@@ -432,6 +437,31 @@ body {
 .field-inline select {
   font-weight: 400;
   color: var(--ink);
+  padding: 7px 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+  font-size: 14px;
+}
+.consult-student-bar .field-inline select {
+  min-width: 190px;
+}
+/* 저장 버튼: 상담 탭의 인쇄/PDF·탭 버튼과 같은 잉크 네이비 톤 */
+.consult-student-bar .primary {
+  padding: 8px 14px;
+  border: 1px solid var(--ink);
+  background: var(--ink);
+  color: #fff;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+}
+.consult-student-bar .primary:hover {
+  background: #1b2a63;
+}
+.consult-student-bar .muted {
+  font-size: 12.5px;
 }
 
 /* CSV 업로드 형식 도움말(접이식) — 학생/시험지 관리 */

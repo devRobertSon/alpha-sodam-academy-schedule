@@ -3,18 +3,29 @@ import { toJpeg } from 'html-to-image';
 import { AssessmentData, TypeStat, scoreOf, todayStr, typeStatsCumulative } from '../../lib/assessment';
 import { logoUrl, sealUrl } from '../../lib/brand';
 
-// 자동 생성 직인(도장) — assets/brand/seal.* 이미지가 없을 때 사용
+// 자동 생성 직인(도장) — assets/brand/seal.* 이미지가 없을 때 사용.
+// 일반 회사·연구소 원형 직인 형태: 기관명이 원을 따라 곡선으로 둘러싸고,
+// 좌우 구분 마름모, 중앙 별, 하단 짧은 라벨.
+const SEAL_RED = '#C0392B';
 function SealStamp() {
   return (
-    <svg viewBox="0 0 130 130" className="report-seal-svg" role="img" aria-label="알파학원 교육연구소 직인">
-      <g transform="rotate(-6 65 65)">
-        <circle cx="65" cy="65" r="60" fill="rgba(192,57,43,0.05)" stroke="#C0392B" strokeWidth="3.5" />
-        <circle cx="65" cy="65" r="50" fill="none" stroke="#C0392B" strokeWidth="1.2" />
-        <text x="65" y="33" textAnchor="middle" fontSize="12" fill="#C0392B" fontWeight="700">★</text>
-        <text x="65" y="61" textAnchor="middle" fontSize="19" fill="#C0392B" fontWeight="800" letterSpacing="2">알파학원</text>
-        <text x="65" y="83" textAnchor="middle" fontSize="12.5" fill="#C0392B" fontWeight="700" letterSpacing="3">교육연구소</text>
-        <text x="65" y="104" textAnchor="middle" fontSize="11" fill="#C0392B" fontWeight="700">認</text>
+    <svg viewBox="0 0 140 140" className="report-seal-svg" role="img" aria-label="알파학원 교육연구소 직인">
+      <defs>
+        {/* 기관명이 원을 크게 감싸도록 넓은 상단 아치(좌하→위→우하, 약 250°) */}
+        <path id="sealTopArc" d="M 32.3,96.4 A 46,46 0 1 1 107.7,96.4" fill="none" />
+      </defs>
+      <g fill="none" stroke={SEAL_RED}>
+        <circle cx="70" cy="70" r="66" strokeWidth="4" />
+        <circle cx="70" cy="70" r="57" strokeWidth="1.3" />
       </g>
+      {/* 상단(넓게): 기관명 곡선 */}
+      <text fill={SEAL_RED} fontSize="14" fontWeight="800" letterSpacing="1.5">
+        <textPath href="#sealTopArc" startOffset="50%" textAnchor="middle">알파학원 교육연구소</textPath>
+      </text>
+      {/* 중앙 별 */}
+      <text x="70" y="80" textAnchor="middle" fontSize="30" fill={SEAL_RED}>★</text>
+      {/* 하단 중앙: 짧은 라벨(가로, 바로 섬) */}
+      <text x="70" y="106" textAnchor="middle" fontSize="11" fontWeight="700" fill={SEAL_RED} letterSpacing="5">직인</text>
     </svg>
   );
 }

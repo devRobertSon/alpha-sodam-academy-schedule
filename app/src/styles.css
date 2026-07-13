@@ -409,6 +409,31 @@ body {
   color: var(--muted);
 }
 
+/* 상담: 학생 저장/불러오기 바 + 과목 추가 */
+.consult-student-bar,
+.add-course-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+.add-course-row {
+  margin: 10px 0 0;
+}
+.field-inline {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+}
+.field-inline select {
+  font-weight: 400;
+  color: var(--ink);
+}
+
 /* CSV 업로드 형식 도움말(접이식) — 학생/시험지 관리 */
 .csv-help {
   margin: 6px 0 2px;

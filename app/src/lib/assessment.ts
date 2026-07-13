@@ -1,6 +1,15 @@
 // src/lib/assessment.ts — 학생 개별 평가 데이터(학생·시험지·채점) + CSV 임포트 + 집계
 // 저장: localStorage 단일 키 + JSON 백업
 import { loadStore } from './store';
+import { TimeSlot } from '../data/roadmap';
+
+// 입시 상담 로드맵에서 저장한 학생별 시간표(로드맵 포함 과목·시작월 이동·세션 시간)
+export interface ConsultPlan {
+  month: number;
+  includedIds: string[];
+  shifts: Record<string, number>;
+  slotOverrides: Record<string, TimeSlot>;
+}
 
 export type ExamKind = '진단' | '단원';
 
@@ -49,6 +58,7 @@ export interface Student {
   grade: string;
   memo?: string;
   courseIds?: string[]; // 학생이 듣는 수업들
+  consult?: ConsultPlan; // 상담 로드맵에서 저장한 시간표(불러오기용)
 }
 
 export interface Mark {

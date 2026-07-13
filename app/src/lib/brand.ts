@@ -7,3 +7,11 @@ const found = import.meta.glob(
 );
 
 export const logoUrl: string | null = (Object.values(found)[0] as string | undefined) ?? null;
+
+// 리포트 하단 직인(도장). app/src/assets/brand/seal.{png,svg,...}이 있으면 그 이미지를,
+// 없으면 컴포넌트가 자동 생성 도장(SVG)으로 대체.
+const sealFound = import.meta.glob(
+  '../assets/brand/seal.{png,jpg,jpeg,svg,webp,PNG,JPG,JPEG,SVG,WEBP}',
+  { eager: true, query: '?url', import: 'default' }
+);
+export const sealUrl: string | null = (Object.values(sealFound)[0] as string | undefined) ?? null;

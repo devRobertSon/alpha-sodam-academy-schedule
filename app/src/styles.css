@@ -1392,6 +1392,103 @@ body {
   padding-left: 8px;
 }
 
+/* 리포트 전문화: 레터헤드 · 정보표 · 발행 푸터 · 직인 */
+.report-letterhead {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 6px 2px 12px;
+  border-bottom: 2px solid var(--ink);
+}
+.report-lh-logo {
+  height: 46px;
+  width: auto;
+  border-radius: 6px;
+}
+.report-lh-org {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--accent);
+  letter-spacing: 0.5px;
+}
+.report-lh-title {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--ink);
+  margin-top: 1px;
+}
+.report-info-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.report-info-table th,
+.report-info-table td {
+  border: 1px solid var(--line);
+  padding: 7px 10px;
+  text-align: left;
+}
+.report-info-table th {
+  background: var(--accent-soft);
+  color: var(--ink);
+  font-weight: 700;
+  width: 90px;
+  white-space: nowrap;
+}
+/* 섹션 제목 브랜드 강조(캡처 영역 내) */
+.report-capture .assess-card > h3 {
+  border-left: 3px solid var(--accent);
+  padding-left: 8px;
+}
+.report-footer {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 6px;
+  padding-top: 14px;
+  border-top: 2px solid var(--ink);
+}
+.report-footer-org {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--ink);
+  letter-spacing: 1px;
+}
+.report-footer-en {
+  font-size: 11px;
+  color: var(--muted);
+  letter-spacing: 0.5px;
+  margin-bottom: 8px;
+}
+.report-footer-sign {
+  font-size: 13px;
+  color: var(--ink);
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+}
+.sign-line {
+  display: inline-block;
+  width: 120px;
+  border-bottom: 1px solid var(--muted);
+  height: 14px;
+}
+.report-footer-date {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 4px;
+}
+.report-footer-seal {
+  flex-shrink: 0;
+}
+.report-seal-svg,
+.report-seal-img {
+  width: 108px;
+  height: 108px;
+  object-fit: contain;
+}
+
 /* 유형별 정답률 레이더 차트 */
 .type-radar-wrap {
   display: flex;

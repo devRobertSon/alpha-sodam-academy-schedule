@@ -1,10 +1,47 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { toJpeg } from 'html-to-image';
 import { AssessmentData, TypeStat, scoreOf, todayStr, typeStatsCumulative } from '../../lib/assessment';
+import { logoUrl, sealUrl } from '../../lib/brand';
+
+// 자동 생성 직인(도장) — assets/brand/seal.* 이미지가 없을 때 사용.
+// 일반 회사·연구소 원형 직인 형태: 기관명이 원을 따라 곡선으로 둘러싸고,
+// 좌우 구분 마름모, 중앙 별, 하단 짧은 라벨.
+const SEAL_RED = '#C0392B';
+// 사각 직인(전각 인장) — 기관명 9자를 3×3 격자로, 이중 사각 테두리.
+const SEAL_ROWS = [
+  ['알', '파', '학'],
+  ['원', '교', '육'],
+  ['연', '구', '소'],
+];
+const SEAL_CELL = [32, 66, 100];
+function SealStamp() {
+  return (
+    <svg viewBox="0 0 132 132" className="report-seal-svg" role="img" aria-label="알파학원 교육연구소 직인">
+      {/* 이중 사각 테두리 */}
+      <rect x="6" y="6" width="120" height="120" rx="7" fill="rgba(192,57,43,0.05)" stroke={SEAL_RED} strokeWidth="5" />
+      <rect x="15" y="15" width="102" height="102" rx="3" fill="none" stroke={SEAL_RED} strokeWidth="1.3" />
+      {/* 기관명 3×3 격자(좌→우, 위→아래) */}
+      {SEAL_ROWS.map((row, r) =>
+        row.map((ch, c) => (
+          <text
+            key={`${r}-${c}`}
+            x={SEAL_CELL[c]}
+            y={SEAL_CELL[r] + 10}
+            textAnchor="middle"
+            fontSize="27"
+            fontWeight="800"
+            fill={SEAL_RED}
+          >
+            {ch}
+          </text>
+        ))
+      )}
+    </svg>
+  );
+}
 
 interface Props {
   data: AssessmentData;
-  setData: (d: AssessmentData) => void;
 }
 
 // 이 문제 수 이상인 유형만 차트(막대·레이더)에 표시. 그 미만은 아래 비고 표로.
@@ -148,8 +185,10 @@ function TypeRadar({ stats }: { stats: TypeStat[] }) {
   );
 }
 
-export default function TypeReport({ data, setData }: Props) {
+export default function TypeReport({ data }: Props) {
   const [studentId, setStudentId] = useState('');
+  // 선생님 종합 의견은 저장하지 않는 임시 입력 — 학생을 바꾸면 비워짐
+  const [note, setNote] = useState('');
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [fromDate, setFromDate] = useState('');
   const [toDate, setToDate] = useState('');
@@ -157,14 +196,6 @@ export default function TypeReport({ data, setData }: Props) {
   const captureRef = useRef<HTMLDivElement>(null);
 
   const student = data.students.find((s) => s.id === studentId);
-  const note = student?.reportNote ?? '';
-  const setNote = (text: string) => {
-    if (!student) return;
-    setData({
-      ...data,
-      students: data.students.map((s) => (s.id === student.id ? { ...s, reportNote: text } : s)),
-    });
-  };
   const examById = useMemo(() => new Map(data.exams.map((e) => [e.id, e])), [data.exams]);
 
   const studentResults = useMemo(
@@ -178,6 +209,11 @@ export default function TypeReport({ data, setData }: Props) {
     setToDate('');
     setSelectedIds(new Set(studentResults.map((r) => r.id)));
   }, [studentId, studentResults.length]);
+
+  // 학생이 바뀌면 선생님 의견 칸 비움(저장하지 않음)
+  useEffect(() => {
+    setNote('');
+  }, [studentId]);
 
   // 기간을 정하면 그 기간에 응시한 시험을 선택(날짜 문자열 YYYY-MM-DD 사전순 비교)
   const applyRange = (from: string, to: string) => {
@@ -306,7 +342,7 @@ export default function TypeReport({ data, setData }: Props) {
 
           <div className="assess-card no-print report-note-edit">
             <h3>✍ 선생님 종합 의견 · 추천 수업</h3>
-            <p className="muted">상담 결과, 추천 수업 등을 적으면 아래 리포트와 <b>PDF 출력에 함께</b> 나옵니다. (학생별로 자동 저장)</p>
+            <p className="muted">상담 결과, 추천 수업 등을 적으면 아래 리포트와 <b>PDF 출력에 함께</b> 나옵니다. (저장되지 않는 임시 입력 — 학생을 바꾸면 비워집니다)</p>
             <textarea
               className="report-note-input"
               rows={5}
@@ -320,14 +356,30 @@ export default function TypeReport({ data, setData }: Props) {
             <p className="muted">시험을 하나 이상 선택하세요.</p>
           ) : (
             <div ref={captureRef} className="report-capture">
-              <div className="report-cap-head">
-                <div className="report-cap-title">{student?.name} 학생 · 유형별 평가 리포트</div>
-                <div className="report-cap-sub">
-                  {student?.grade} · 생성일 {today}
-                  {(fromDate || toDate) && ` · 기간 ${fromDate || '처음'} ~ ${toDate || '끝'}`}
-                  {' · '}대상 시험 {selectedResults.length}개
+              <div className="report-letterhead">
+                {logoUrl && <img src={logoUrl} className="report-lh-logo" alt="" />}
+                <div className="report-lh-text">
+                  <div className="report-lh-org">알파학원 교육연구소</div>
+                  <div className="report-lh-title">학생 개별 평가 리포트</div>
                 </div>
               </div>
+
+              <table className="report-info-table">
+                <tbody>
+                  <tr>
+                    <th>학생</th><td>{student?.name}</td>
+                    <th>학년</th><td>{student?.grade}</td>
+                  </tr>
+                  <tr>
+                    <th>학교</th><td>{student?.school || '—'}</td>
+                    <th>발행일</th><td>{today}</td>
+                  </tr>
+                  <tr>
+                    <th>대상 기간</th><td>{fromDate || toDate ? `${fromDate || '처음'} ~ ${toDate || '끝'}` : '전체'}</td>
+                    <th>대상 시험</th><td>{selectedResults.length}개</td>
+                  </tr>
+                </tbody>
+              </table>
 
               <div className="assess-card">
                 <h3>유형별 정답률</h3>
@@ -377,6 +429,18 @@ export default function TypeReport({ data, setData }: Props) {
                   <div className="report-note-body">{note}</div>
                 </div>
               )}
+
+              <div className="report-footer">
+                <div className="report-footer-left">
+                  <div className="report-footer-org">알파학원 교육연구소</div>
+                  <div className="report-footer-en">ALPHA ACADEMY · Education Research Institute</div>
+                  <div className="report-footer-sign">담당 선생님 <span className="sign-line" /> (인)</div>
+                  <div className="report-footer-date">발행일 {today}</div>
+                </div>
+                <div className="report-footer-seal">
+                  {sealUrl ? <img src={sealUrl} className="report-seal-img" alt="직인" /> : <SealStamp />}
+                </div>
+              </div>
             </div>
           )}
         </>

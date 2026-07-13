@@ -61,7 +61,6 @@ export interface Student {
   memo?: string;
   courseIds?: string[]; // 학생이 듣는 수업들
   consult?: ConsultPlan; // 상담 로드맵에서 저장한 시간표(불러오기용)
-  reportNote?: string; // 리포트에 함께 출력할 선생님 종합 의견·추천 수업
 }
 
 export interface Mark {

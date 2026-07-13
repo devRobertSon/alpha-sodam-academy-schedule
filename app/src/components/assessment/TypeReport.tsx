@@ -21,7 +21,6 @@ function SealStamp() {
 
 interface Props {
   data: AssessmentData;
-  setData: (d: AssessmentData) => void;
 }
 
 // 이 문제 수 이상인 유형만 차트(막대·레이더)에 표시. 그 미만은 아래 비고 표로.
@@ -165,8 +164,10 @@ function TypeRadar({ stats }: { stats: TypeStat[] }) {
   );
 }
 
-export default function TypeReport({ data, setData }: Props) {
+export default function TypeReport({ data }: Props) {
   const [studentId, setStudentId] = useState('');
+  // 선생님 종합 의견은 저장하지 않는 임시 입력 — 학생을 바꾸면 비워짐
+  const [note, setNote] = useState('');
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [fromDate, setFromDate] = useState('');
   const [toDate, setToDate] = useState('');
@@ -174,14 +175,6 @@ export default function TypeReport({ data, setData }: Props) {
   const captureRef = useRef<HTMLDivElement>(null);
 
   const student = data.students.find((s) => s.id === studentId);
-  const note = student?.reportNote ?? '';
-  const setNote = (text: string) => {
-    if (!student) return;
-    setData({
-      ...data,
-      students: data.students.map((s) => (s.id === student.id ? { ...s, reportNote: text } : s)),
-    });
-  };
   const examById = useMemo(() => new Map(data.exams.map((e) => [e.id, e])), [data.exams]);
 
   const studentResults = useMemo(
@@ -195,6 +188,11 @@ export default function TypeReport({ data, setData }: Props) {
     setToDate('');
     setSelectedIds(new Set(studentResults.map((r) => r.id)));
   }, [studentId, studentResults.length]);
+
+  // 학생이 바뀌면 선생님 의견 칸 비움(저장하지 않음)
+  useEffect(() => {
+    setNote('');
+  }, [studentId]);
 
   // 기간을 정하면 그 기간에 응시한 시험을 선택(날짜 문자열 YYYY-MM-DD 사전순 비교)
   const applyRange = (from: string, to: string) => {
@@ -323,7 +321,7 @@ export default function TypeReport({ data, setData }: Props) {
 
           <div className="assess-card no-print report-note-edit">
             <h3>✍ 선생님 종합 의견 · 추천 수업</h3>
-            <p className="muted">상담 결과, 추천 수업 등을 적으면 아래 리포트와 <b>PDF 출력에 함께</b> 나옵니다. (학생별로 자동 저장)</p>
+            <p className="muted">상담 결과, 추천 수업 등을 적으면 아래 리포트와 <b>PDF 출력에 함께</b> 나옵니다. (저장되지 않는 임시 입력 — 학생을 바꾸면 비워집니다)</p>
             <textarea
               className="report-note-input"
               rows={5}

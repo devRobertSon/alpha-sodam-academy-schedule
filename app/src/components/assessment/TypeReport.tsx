@@ -3,13 +3,8 @@ import { toJpeg } from 'html-to-image';
 import { AssessmentData, TypeStat, scoreOf, todayStr, typeStatsCumulative } from '../../lib/assessment';
 import { logoUrl, sealUrl } from '../../lib/brand';
 
-// 리포트 PDF 뒤에 붙일 첨부 PDF(있으면). app/src/assets/report-append.pdf
-const appendPdfs = import.meta.glob('../../assets/report-append.pdf', {
-  eager: true,
-  query: '?url',
-  import: 'default',
-});
-const appendPdfUrl = (Object.values(appendPdfs)[0] as string | undefined) ?? null;
+// 리포트 뒤 상담 카드에 넣을 목표 고등학교 선택지
+const TARGET_SCHOOLS = ['영재학교', '과학고', '외고', '국제고', '전사고', '의대 준비'];
 
 // 자동 생성 직인(도장) — assets/brand/seal.* 이미지가 없을 때 사용.
 // 일반 회사·연구소 원형 직인 형태: 기관명이 원을 따라 곡선으로 둘러싸고,
@@ -202,6 +197,7 @@ export default function TypeReport({ data }: Props) {
   const [toDate, setToDate] = useState('');
   const [busy, setBusy] = useState(false);
   const captureRef = useRef<HTMLDivElement>(null);
+  const appendRef = useRef<HTMLDivElement>(null);
 
   const student = data.students.find((s) => s.id === studentId);
   const examById = useMemo(() => new Map(data.exams.map((e) => [e.id, e])), [data.exams]);
@@ -264,61 +260,33 @@ export default function TypeReport({ data }: Props) {
     setBusy(true);
     try {
       const { jsPDF } = await import('jspdf');
-      const dataUrl = await toJpeg(captureRef.current, { backgroundColor: '#ffffff', quality: 0.92, pixelRatio: 2, cacheBust: true });
       const pdf = new jsPDF('p', 'mm', 'a4');
       const pageW = pdf.internal.pageSize.getWidth();
       const pageH = pdf.internal.pageSize.getHeight();
       const MARGIN = 12; // 상하좌우 여백(mm) — 인쇄 시 잘림 방지
       const contentW = pageW - MARGIN * 2;
       const contentH = pageH - MARGIN * 2;
-      const props = pdf.getImageProperties(dataUrl);
-      const imgH = (props.height * contentW) / props.width;
-      const pages = Math.max(1, Math.ceil(imgH / contentH));
-      for (let k = 0; k < pages; k++) {
-        if (k > 0) pdf.addPage();
-        // 이미지를 여백 안쪽에 배치하고, 페이지마다 위로 밀어 다음 구간을 보여줌
-        pdf.addImage(dataUrl, 'JPEG', MARGIN, MARGIN - k * contentH, contentW, imgH);
-        // 인접 구간이 상·하 여백으로 넘쳐 보이지 않도록 여백 영역을 흰색으로 덮음
-        pdf.setFillColor(255, 255, 255);
-        pdf.rect(0, 0, pageW, MARGIN, 'F');
-        pdf.rect(0, pageH - MARGIN, pageW, MARGIN, 'F');
-      }
-      const filename = `리포트_${student.name}_${today}.pdf`;
 
-      // 첨부 PDF가 있으면 리포트 뒤에 병합해서 저장(실패 시 리포트만 저장)
-      let mergedBytes: Uint8Array | null = null;
-      if (appendPdfUrl) {
-        try {
-          const { PDFDocument } = await import('pdf-lib');
-          const merged = await PDFDocument.load(pdf.output('arraybuffer'));
-          const appendBytes = await fetch(appendPdfUrl).then((r) => r.arrayBuffer());
-          const appendDoc = await PDFDocument.load(appendBytes);
-          const copied = await merged.copyPages(appendDoc, appendDoc.getPageIndices());
-          copied.forEach((pg) => {
-            // 신입생 상담원서에서 하단 3개 표(목표 고등학교·현재 진도·개인정보 수집·이용 동의서)만
-            // 남기고 크롭. 좌표는 해당 PDF 레이아웃 기준(원본 595.9×842.9pt, 원점 좌하단).
-            pg.setMediaBox(0, 320, 595.9, 279);
-            pg.setCropBox(0, 320, 595.9, 279);
-            merged.addPage(pg);
-          });
-          mergedBytes = await merged.save();
-        } catch (mergeErr) {
-          console.error('첨부 PDF 병합 실패 — 리포트만 저장', mergeErr);
-          mergedBytes = null;
+      // 캡처 영역(div)을 이미지로 만들어 여백 안쪽에 페이지 단위로 배치
+      const addCapture = async (el: HTMLElement, startNewPage: boolean) => {
+        const url = await toJpeg(el, { backgroundColor: '#ffffff', quality: 0.92, pixelRatio: 2, cacheBust: true });
+        const props = pdf.getImageProperties(url);
+        const imgH = (props.height * contentW) / props.width;
+        const nPages = Math.max(1, Math.ceil(imgH / contentH));
+        for (let k = 0; k < nPages; k++) {
+          if (startNewPage || k > 0) pdf.addPage();
+          pdf.addImage(url, 'JPEG', MARGIN, MARGIN - k * contentH, contentW, imgH);
+          // 인접 구간이 상·하 여백으로 넘쳐 보이지 않도록 여백 영역을 흰색으로 덮음
+          pdf.setFillColor(255, 255, 255);
+          pdf.rect(0, 0, pageW, MARGIN, 'F');
+          pdf.rect(0, pageH - MARGIN, pageW, MARGIN, 'F');
         }
-      }
+      };
 
-      if (mergedBytes) {
-        const blob = new Blob([mergedBytes as unknown as BlobPart], { type: 'application/pdf' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = filename;
-        a.click();
-        URL.revokeObjectURL(url);
-      } else {
-        pdf.save(filename);
-      }
+      await addCapture(captureRef.current, false); // 1페이지~: 리포트
+      if (appendRef.current) await addCapture(appendRef.current, true); // 뒤: 상담 카드(3개 표)
+
+      pdf.save(`리포트_${student.name}_${today}.pdf`);
     } catch (e) {
       console.error(e);
       alert('PDF 저장에 실패했습니다. 다시 시도해 주세요.');
@@ -481,6 +449,60 @@ export default function TypeReport({ data }: Props) {
                 </div>
                 <div className="report-footer-seal">
                   {sealUrl ? <img src={sealUrl} className="report-seal-img" alt="직인" /> : <SealStamp />}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* 뒤 페이지: 상담 카드(목표 고등학교·현재 진도·개인정보 동의서) — 리포트와 같은 스타일 */}
+          {selectedResults.length > 0 && (
+            <div ref={appendRef} className="report-capture report-append">
+              <div className="report-letterhead">
+                {logoUrl && <img src={logoUrl} className="report-lh-logo" alt="" />}
+                <div className="report-lh-text">
+                  <div className="report-lh-org">알파학원 교육연구소</div>
+                  <div className="report-lh-title">상담 카드 · 추가 정보</div>
+                </div>
+              </div>
+
+              <div className="assess-card">
+                <h3>목표 고등학교 <span className="rp-muted">(복수 선택 가능)</span></h3>
+                <div className="rp-checks">
+                  {TARGET_SCHOOLS.map((o) => (
+                    <span key={o} className="rp-check">☐ {o}</span>
+                  ))}
+                </div>
+              </div>
+
+              <div className="assess-card">
+                <h3>현재 진도 · 학습 내용</h3>
+                <table className="report-info-table rp-progress">
+                  <thead>
+                    <tr>
+                      <th>과목</th>
+                      <th>현재 진도 <span className="rp-eg">(예시: 중 3-2, 대수)</span></th>
+                      <th>학습 내용 <span className="rp-eg">(문제집 예시: 중등 - 쎈, 고등 - 수학의 정석)</span></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr><th>수학</th><td className="rp-blank" /><td className="rp-blank" /></tr>
+                    <tr><th>과학</th><td className="rp-blank" /><td className="rp-blank" /></tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <div className="assess-card">
+                <h3>개인정보 수집 · 이용 동의서</h3>
+                <ol className="rp-privacy">
+                  <li><b>수집·이용 목적</b> : 학원 수강 상담, 학습 정보 제공, 공지사항 및 소식지 전달</li>
+                  <li><b>수집 항목</b> : 학생 성명, 학교/학년, 학생·학부모 휴대폰 번호, 성적 정보, 목표(희망) 고등학교, 형제 재원 여부, 학습 이력(진도·교재)</li>
+                  <li><b>보유·이용 기간</b> : 수집된 개인정보는 학원 등록 후 재원 기간 동안 보유하며 관계 법령에 따라 보존이 필요한 경우 해당 기간 동안 별도 보관합니다. 개인정보 제공자가 동의한 내용 외에 다른 목적으로 활용하지 않으며, 제공된 개인정보의 이용을 거부하고자 할 때에는 개인정보처리책임자를 통해 열람·정정·삭제를 요구할 수 있습니다.</li>
+                </ol>
+                <p className="rp-agree">「개인정보 보호법」 등 관련 법규에 의거하여, 상기 본인은 위와 같이 개인정보 수집 및 이용에 동의합니다.</p>
+                <div className="rp-sign">
+                  <span>20 _____ 년 _____ 월 _____ 일</span>
+                  <span>성명 : ______________ (서명/인)</span>
+                  <span>알파학원 귀하</span>
                 </div>
               </div>
             </div>

@@ -272,7 +272,8 @@ export default function TypeReport({ data }: Props) {
         const url = await toJpeg(el, { backgroundColor: '#ffffff', quality: 0.92, pixelRatio: 2, cacheBust: true });
         const props = pdf.getImageProperties(url);
         const imgH = (props.height * contentW) / props.width;
-        const nPages = Math.max(1, Math.ceil(imgH / contentH));
+        // -0.5mm 여유: 딱 한 페이지 높이일 때 부동소수 오차로 빈 페이지가 더 생기는 것 방지
+        const nPages = Math.max(1, Math.ceil((imgH - 0.5) / contentH));
         for (let k = 0; k < nPages; k++) {
           if (startNewPage || k > 0) pdf.addPage();
           pdf.addImage(url, 'JPEG', MARGIN, MARGIN - k * contentH, contentW, imgH);
@@ -489,6 +490,11 @@ export default function TypeReport({ data }: Props) {
                     <tr><th>과학</th><td className="rp-blank" /><td className="rp-blank" /></tr>
                   </tbody>
                 </table>
+              </div>
+
+              <div className="assess-card rp-memo">
+                <h3>상담 메모 · 특이사항</h3>
+                <div className="rp-memo-box" />
               </div>
 
               <div className="assess-card">

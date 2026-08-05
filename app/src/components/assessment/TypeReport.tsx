@@ -48,7 +48,8 @@ interface Props {
 }
 
 // 이 문제 수 이상인 유형만 차트(막대·레이더)에 표시. 그 미만은 아래 비고 표로.
-const MIN_CHART_TOTAL = 5;
+// 1로 두면 문항이 1개인 유형도 모두 차트에 포함(비고 표는 사실상 생략).
+const MIN_CHART_TOTAL = 1;
 
 function rateColor(rate: number): string {
   if (rate >= 0.8) return '#2C79D0';
@@ -403,9 +404,11 @@ export default function TypeReport({ data }: Props) {
                   </p>
                 ) : (
                   <>
-                    <TypeBars stats={mainStats} />
                     <div className="type-radar-wrap">
                       <TypeRadar stats={mainStats} />
+                    </div>
+                    <div className="type-bars-wrap">
+                      <TypeBars stats={mainStats} />
                     </div>
                   </>
                 )}

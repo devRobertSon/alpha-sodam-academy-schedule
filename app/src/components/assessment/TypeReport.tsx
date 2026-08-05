@@ -404,9 +404,11 @@ export default function TypeReport({ data }: Props) {
                   </p>
                 ) : (
                   <>
-                    <TypeBars stats={mainStats} />
                     <div className="type-radar-wrap">
                       <TypeRadar stats={mainStats} />
+                    </div>
+                    <div className="type-bars-wrap">
+                      <TypeBars stats={mainStats} />
                     </div>
                   </>
                 )}

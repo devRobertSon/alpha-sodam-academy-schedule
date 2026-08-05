@@ -112,7 +112,19 @@ function TypeRadar({ stats }: { stats: TypeStat[] }) {
   const cx = RADAR_W / 2;
   const cy = RADAR_H / 2 + 8;
   const n = stats.length;
-  const angleOf = (i: number) => -Math.PI / 2 + (2 * Math.PI * i) / n;
+  // 각 유형이 차지하는 각도(부채꼴)를 문제 수에 비례하게 — 단, 균등 배치와
+  // 섞어(BLEND) 한 유형이 각을 독차지해 도형이 지나치게 찌그러지는 것을 방지.
+  const totalQ = stats.reduce((sum, s) => sum + s.total, 0) || 1;
+  const BLEND = 0.5; // 0=완전 균등, 1=문제 수 완전 비례
+  const share = stats.map((s) => (1 - BLEND) / n + BLEND * (s.total / totalQ));
+  // 각 유형의 스포크(축)를 자기 부채꼴의 중앙에 배치
+  let acc = 0;
+  const centerFrac = stats.map((_, i) => {
+    const c = acc + share[i] / 2;
+    acc += share[i];
+    return c;
+  });
+  const angleOf = (i: number) => -Math.PI / 2 + 2 * Math.PI * centerFrac[i];
   const ptOf = (i: number, r: number): [number, number] => [
     cx + r * Math.cos(angleOf(i)),
     cy + r * Math.sin(angleOf(i)),

@@ -129,8 +129,6 @@ function TypeRadar({ stats }: { stats: TypeStat[] }) {
     cx + r * Math.cos(angleOf(i)),
     cy + r * Math.sin(angleOf(i)),
   ];
-  const ringPoly = (ratio: number) =>
-    stats.map((_, i) => ptOf(i, RADAR_R * ratio).map((v) => v.toFixed(1)).join(',')).join(' ');
   const dataPoly = stats
     .map((s, i) => ptOf(i, RADAR_R * s.rate).map((v) => v.toFixed(1)).join(','))
     .join(' ');
@@ -143,10 +141,13 @@ function TypeRadar({ stats }: { stats: TypeStat[] }) {
       role="img"
       aria-label="유형별 정답률 레이더 차트"
     >
+      {/* 배경 격자는 중심(cx,cy) 고정 동심원 — 중앙이 움직이지 않고 25/50/75/100 눈금이 항상 원 위에 정확히 위치 */}
       {[0.25, 0.5, 0.75, 1].map((ratio) => (
-        <polygon
+        <circle
           key={ratio}
-          points={ringPoly(ratio)}
+          cx={cx}
+          cy={cy}
+          r={RADAR_R * ratio}
           fill={ratio === 1 ? '#F3F7FD' : 'none'}
           stroke="#D5DFF0"
           strokeWidth={ratio === 1 ? 1.2 : 0.8}
